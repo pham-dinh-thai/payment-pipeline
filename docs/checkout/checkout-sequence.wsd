@@ -1,0 +1,46 @@
+@startuml "checkout-sequence"
+skinparam backgroundColor white
+
+actor "Khách hàng" as customer
+participant "Checkout Module" as checkout
+participant "Order Module" as order
+participant "Payment Module" as payment
+
+customer -> checkout : Nhấn nút thanh toán
+checkout -> order : Gửi yêu cầu tạo đơn hàng (customer_id, {product_id, quantity}[])
+order -> order : Truy vấn đơn giá của từng mặt hàng 
+
+alt mặt hàng không còn
+    order -> checkout : Trả về lỗi
+    checkout -> customer : Hiển thị lỗi, khôi phục trạng thái giỏ
+
+else truy vấn thành công giá mặt hàng
+    order -> order : Tạo đơn hàng (pending)
+    order -> checkout : Gửi order_id, total_amount
+    checkout -> payment : Gửi yêu cầu tạo payment (order_id, total_amount)
+
+    payment -> payment : Tạo payment (pending)
+
+    alt tạo payment thất bại
+        payment -> checkout : Trả về lỗi
+        checkout -> order : Yêu cầu cập nhật trạng thái đơn hàng (failed)
+        order -> order : Cập nhật trạng thái đơn hàng (failed)
+        checkout -> customer : Hiển thị lỗi
+    else tạo payment thành công
+        payment -> payment : Tạo URL thanh toán
+
+        alt tạo URL thanh toán thất bại
+            payment -> payment : Cập nhật trạng thái payment (failed)
+            payment -> checkout : Trả về lỗi
+            checkout -> order : Yêu cầu cập nhật trạng thái đơn hàng (failed)
+            order -> order : Cập nhật trạng thái đơn hàng (failed)
+            checkout -> customer : Hiển thị lỗi
+
+        else tạo URL thanh toán thành công 
+            payment -> checkout : Trả về URL thanh toán
+            checkout -> customer : Điều hướng khách hàng tới trang thanh toán
+        end
+    end
+end
+
+@enduml

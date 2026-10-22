@@ -1,0 +1,34 @@
+@startuml "payment-sequence"
+skinparam backgroundColor white
+
+actor "Khách hàng" as customer
+participant "PSP (Payment Provider Service)" as psp
+participant "Payment Module" as payment
+participant "Order Module" as order
+
+customer -> psp : Nhập thông tin thanh toán + OTP
+psp -> psp : Kiểm tra thông tin
+
+alt Xác thực thông tin thất bại 
+    psp -> customer : Hiển thị lỗi, yêu cầu nhập lại 
+else Xác thực thông tin thành công
+    psp ->> payment : Gọi tới endpoint IPN (gửi kèm chữ ký, số tiền)
+    psp ->> customer : Redirect về trang chính (RETURN_URL)
+
+    payment -> payment : Kiểm tra thông tin
+
+    alt Verify chữ ký + số tiền thất bại
+        payment --> psp : Trả về lỗi ({rspCode, message})
+    else Verify thành công
+        group #EBF0FF UnitOfWork (commit / rollback)
+            payment -> payment : Cập nhật payment (pending -> success)
+            payment -> order : Gửi yêu cầu cập nhật order
+            order -> order : Cập nhật status (pending -> confirm)
+            order -> order : Cập nhật orderPaymentStatus (unpaid -> paid)
+            order --> payment : Trả kết quả
+    end
+    payment --> psp : Trả response ({rspCode: '00', message: 'Success'})
+end
+end
+
+@enduml

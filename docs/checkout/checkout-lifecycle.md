@@ -9,7 +9,7 @@ payment-lifecycle.md.
 
 Activity diagram mô tả happy path của 1 flow checkout
 
-![Activity diagram - Flow checkout](checkout-flow.png)
+![Activity diagram - Flow checkout](checkout-activity.png)
 
 Đầu tiên, hệ thống gửi giỏ hàng tới Order Module (chỉ truyền
 customer_id, product_id và quantity). Backend tự tính đơn giá bằng cách 

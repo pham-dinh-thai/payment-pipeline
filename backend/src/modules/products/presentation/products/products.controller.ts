@@ -21,7 +21,7 @@ export class ProductsController {
       ),
     );
 
-    this.logger.log('Product created');
+    this.logger.log('Product created', result);
 
     return result;
   }

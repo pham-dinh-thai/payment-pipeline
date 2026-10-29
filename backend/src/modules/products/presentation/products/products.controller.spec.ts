@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { DomainValidationException } from '../../../../shared/domain/domain-validation.error';
 import { CreateProductCommand } from '../../application/commands/create-product/create-product.command';
 import { ProductsController } from './products.controller';
@@ -23,7 +23,10 @@ describe('ProductsController', () => {
       .fn<(command: CreateProductCommand) => Promise<{ id: string }>>()
       .mockResolvedValue({ id: 'product-1' });
 
-    controller = new ProductsController({ execute } as unknown as CommandBus);
+    controller = new ProductsController(
+      { execute } as unknown as CommandBus,
+      { execute: jest.fn() } as unknown as QueryBus,
+    );
   });
 
   it('dispatches CreateProductCommand and returns the created id', async () => {

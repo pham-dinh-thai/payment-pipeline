@@ -13,7 +13,10 @@ describe('CreateProductHandler', () => {
       .fn<(product: Product) => Promise<void>>()
       .mockResolvedValue(undefined);
 
-    handler = new CreateProductHandler({ create });
+    handler = new CreateProductHandler({
+      create,
+      findAll: jest.fn<() => Promise<Product[]>>().mockResolvedValue([]),
+    });
   });
 
   it('creates a product and returns its id', async () => {

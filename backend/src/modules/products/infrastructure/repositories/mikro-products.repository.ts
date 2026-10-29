@@ -8,6 +8,21 @@ import { MikroProduct } from '../entities/mikro-product.entity';
 export class MikroProductsRepository implements IProductsRepository {
   public constructor(private readonly entityManager: EntityManager) {}
 
+  public async findAll(): Promise<Product[]> {
+    const mikroProducts = await this.entityManager.findAll(MikroProduct);
+
+    return mikroProducts.map((mikroProduct) =>
+      Product.fromPersistent({
+        id: mikroProduct.id,
+        name: mikroProduct.name,
+        unitPrice: mikroProduct.unitPrice,
+        quantity: mikroProduct.quantity,
+        createdAt: mikroProduct.createdAt,
+        updatedAt: mikroProduct.updatedAt,
+      }),
+    );
+  }
+
   public async create(product: Product): Promise<void> {
     const mikroProduct = this.entityManager.create(MikroProduct, {
       id: product.getId(),

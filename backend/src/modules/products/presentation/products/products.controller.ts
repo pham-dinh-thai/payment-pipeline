@@ -1,13 +1,23 @@
-import { Body, Controller, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Post } from '@nestjs/common';
 import { CreateProductRequest } from './requests/create-product.request';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateProductCommand } from '../../application/commands/create-product/create-product.command';
+import { GetProductsQuery } from '../../application/queries/get-products/get-products.query';
+import { ProductListItemReadModel } from '../../application/queries/get-products/product-list-item.read-model';
 
 @Controller('products')
 export class ProductsController {
   private readonly logger = new Logger(ProductsController.name);
 
-  public constructor(private readonly commandBus: CommandBus) {}
+  public constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  public async findAll(): Promise<ProductListItemReadModel[]> {
+    return this.queryBus.execute(new GetProductsQuery());
+  }
 
   @Post()
   public async create(

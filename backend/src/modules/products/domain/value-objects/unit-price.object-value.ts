@@ -1,5 +1,5 @@
+import { UnprocessableEntityException } from '@nestjs/common';
 import Decimal from 'decimal.js';
-import { DomainValidationException } from '../../../../shared/domain/domain-validation.error';
 
 export class UnitPrice {
   private static readonly PRECISION = 12;
@@ -15,25 +15,29 @@ export class UnitPrice {
     try {
       value = new Decimal(raw);
     } catch {
-      throw new DomainValidationException(`Invalid unit price: "${raw}"`);
+      throw new UnprocessableEntityException(`Invalid unit price: "${raw}"`);
     }
 
     if (!value.isFinite()) {
-      throw new DomainValidationException('Unit price must be a finite number');
+      throw new UnprocessableEntityException(
+        'Unit price must be a finite number',
+      );
     }
 
     if (value.isNegative()) {
-      throw new DomainValidationException('Unit price can not be less than 0');
+      throw new UnprocessableEntityException(
+        'Unit price can not be less than 0',
+      );
     }
 
     if (value.decimalPlaces() > UnitPrice.SCALE) {
-      throw new DomainValidationException(
+      throw new UnprocessableEntityException(
         `Unit price must have at most ${UnitPrice.SCALE} decimal places`,
       );
     }
 
     if (value.greaterThanOrEqualTo(UnitPrice.MAX_VALUE)) {
-      throw new DomainValidationException(
+      throw new UnprocessableEntityException(
         'Unit price is too large (max value: 10^10)',
       );
     }

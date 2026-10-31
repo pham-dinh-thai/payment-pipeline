@@ -1,4 +1,4 @@
-import { ProductId } from './value-objects/product-id.value-object';
+import { Id } from '../../../shared/domain/value-objects/id.value-object';
 import { Quantity } from './value-objects/quantity.value-object';
 import { UnitPrice } from './value-objects/unit-price.object-value';
 
@@ -19,7 +19,7 @@ export type FromPersistentProductProps = {
 
 export class Product {
   public constructor(
-    private readonly id: ProductId,
+    private readonly id: Id,
     private name: string,
     private unitPrice: UnitPrice,
     private quantity: Quantity,
@@ -31,7 +31,7 @@ export class Product {
     const createdAt = new Date();
 
     return new Product(
-      ProductId.generate(),
+      Id.generate(),
       props.name,
       UnitPrice.create(props.unitPrice),
       Quantity.create(props.quantity),
@@ -42,7 +42,7 @@ export class Product {
 
   public static fromPersistent(props: FromPersistentProductProps): Product {
     return new Product(
-      ProductId.create(props.id),
+      Id.create(props.id),
       props.name,
       UnitPrice.create(props.unitPrice),
       Quantity.create(props.quantity),

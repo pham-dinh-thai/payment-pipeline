@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import { DomainValidationException } from '../../../../../shared/domain/domain-validation.error';
+import { UnprocessableEntityException } from '@nestjs/common';
 import { Product } from '../../../domain/product.aggregate';
 import { CreateProductCommand } from './create-product.command';
 import { CreateProductHandler } from './create-product.handler';
@@ -38,7 +38,7 @@ describe('CreateProductHandler', () => {
   it('does not persist a product that violates a domain rule', async () => {
     await expect(
       handler.execute(new CreateProductCommand('Tea', '1.234', 1)),
-    ).rejects.toThrow(DomainValidationException);
+    ).rejects.toThrow(UnprocessableEntityException);
 
     expect(create).not.toHaveBeenCalled();
   });

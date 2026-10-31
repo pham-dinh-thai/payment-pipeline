@@ -7,6 +7,7 @@ import { ProductsModule } from './modules/products/products.module';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ConfigModule } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
+import { InventoriesModule } from './modules/inventories/inventories.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CqrsModule } from '@nestjs/cqrs';
     ProductsModule,
     MikroOrmModule.forRoot(mikroOrmConfig),
     CqrsModule.forRoot(),
+    InventoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

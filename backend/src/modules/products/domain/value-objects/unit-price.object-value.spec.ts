@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { DomainValidationException } from '../../../../shared/domain/domain-validation.error';
+import { UnprocessableEntityException } from '@nestjs/common';
 import { UnitPrice } from './unit-price.object-value';
 
 describe('UnitPrice', () => {
@@ -23,7 +23,7 @@ describe('UnitPrice', () => {
     ['1.234', 'at most 2 decimal places'],
     ['10000000000.00', 'too large'],
   ])('rejects %s', (raw, message) => {
-    expect(() => UnitPrice.create(raw)).toThrow(DomainValidationException);
+    expect(() => UnitPrice.create(raw)).toThrow(UnprocessableEntityException);
     expect(() => UnitPrice.create(raw)).toThrow(message);
   });
 });

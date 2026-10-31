@@ -23,6 +23,27 @@ export class MikroProductsRepository implements IProductsRepository {
     );
   }
 
+  public async findById(id: string): Promise<Product | null> {
+    const mikroProduct = await this.entityManager.findOne(MikroProduct, { id });
+
+    return mikroProduct
+      ? Product.fromPersistent({
+          id: mikroProduct.id,
+          name: mikroProduct.name,
+          unitPrice: mikroProduct.unitPrice,
+          quantity: mikroProduct.quantity,
+          createdAt: mikroProduct.createdAt,
+          updatedAt: mikroProduct.updatedAt,
+        })
+      : null;
+  }
+
+  public async existsById(id: string): Promise<boolean> {
+    const mikroProduct = await this.entityManager.findOne(MikroProduct, { id });
+
+    return !!mikroProduct;
+  }
+
   public async create(product: Product): Promise<void> {
     const mikroProduct = this.entityManager.create(MikroProduct, {
       id: product.getId(),

@@ -15,5 +15,6 @@ import { GetProductsHandler } from './application/queries/get-products/get-produ
     GetProductsHandler,
   ],
   controllers: [ProductsController],
+  exports: [PRODUCTS_REPOSITORY],
 })
 export class ProductsModule {}

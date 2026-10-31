@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals';
-import { DomainValidationException } from '../../../../shared/domain/domain-validation.error';
+import { UnprocessableEntityException } from '@nestjs/common';
 import { Quantity } from './quantity.value-object';
 
 describe('Quantity', () => {
@@ -8,6 +8,6 @@ describe('Quantity', () => {
   });
 
   it.each([-1, -100, 1.5, NaN, Infinity])('rejects %s', (value) => {
-    expect(() => Quantity.create(value)).toThrow(DomainValidationException);
+    expect(() => Quantity.create(value)).toThrow(UnprocessableEntityException);
   });
 });

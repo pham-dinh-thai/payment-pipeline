@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { DomainValidationException } from '../../../../shared/domain/domain-validation.error';
+import { UnprocessableEntityException } from '@nestjs/common';
 import { CreateProductCommand } from '../../application/commands/create-product/create-product.command';
 import { ProductsController } from './products.controller';
 import { CreateProductRequest } from './requests/create-product.request';
@@ -46,7 +46,7 @@ describe('ProductsController', () => {
   });
 
   it('propagates command errors to the caller', async () => {
-    const error = new DomainValidationException('invalid product');
+    const error = new UnprocessableEntityException('invalid product');
     execute.mockRejectedValue(error);
 
     await expect(controller.create(buildRequest())).rejects.toBe(error);

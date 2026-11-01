@@ -215,7 +215,20 @@
         }
       ],
       "triggers": [],
-      "foreignKeys": {},
+      "foreignKeys": {
+        "batches_product_id_foreign": {
+          "columnNames": [
+            "product_id"
+          ],
+          "constraintName": "batches_product_id_foreign",
+          "localTableName": "public.batches",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.products",
+          "updateRule": "cascade"
+        }
+      },
       "comment": null
     },
     {

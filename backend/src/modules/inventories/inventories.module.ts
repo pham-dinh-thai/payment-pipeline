@@ -9,6 +9,7 @@ import { MikroInventory } from './infrastructure/entities/mikro-inventory.entity
 import { ProductsModule } from '../products/products.module';
 import { AdjustBatchStockHandler } from './application/commands/adjust-batch-stock/adjust-batch-stock.handler';
 import { IncreaseBatchStockHandler } from './application/commands/increase-batch-stock/increase-batch-stock.handler';
+import { DecreaseBatchStockHandler } from './application/commands/decrease-batch-stock/decrease-batch-stock.handler';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { IncreaseBatchStockHandler } from './application/commands/increase-batch
     AddBatchHandler,
     AdjustBatchStockHandler,
     IncreaseBatchStockHandler,
+    DecreaseBatchStockHandler,
   ],
 })
 export class InventoriesModule {}

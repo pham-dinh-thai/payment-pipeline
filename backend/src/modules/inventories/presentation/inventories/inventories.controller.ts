@@ -14,6 +14,8 @@ import { AdjustBatchStockRequest } from './requests/adjust-batch-stock.request';
 import { AdjustBatchStockCommand } from '../../application/commands/adjust-batch-stock/adjust-batch-stock.command';
 import { IncreaseBatchStockCommand } from '../../application/commands/increase-batch-stock/increase-batch-stock.command';
 import { IncreaseBatchStockRequest } from './requests/increase-batch-stock.request';
+import { DecreaseBatchStockRequest } from './requests/decrease-batch-stock.request';
+import { DecreaseBatchStockCommand } from '../../application/commands/decrease-batch-stock/decrease-batch-stock.command';
 
 @Controller('inventories')
 export class InventoriesController {
@@ -63,6 +65,19 @@ export class InventoriesController {
   ): Promise<void> {
     await this.commandBus.execute(
       new IncreaseBatchStockCommand(productId, batchId, request.quantity),
+    );
+
+    this.logger.log(`Batch ${batchId} increased`, request);
+  }
+
+  @Patch(':productId/decrease/:batchId')
+  public async decreaseBatchStock(
+    @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
+    @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
+    @Body() request: DecreaseBatchStockRequest,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new DecreaseBatchStockCommand(productId, batchId, request.quantity),
     );
 
     this.logger.log(`Batch ${batchId} increased`, request);

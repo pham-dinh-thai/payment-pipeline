@@ -33,7 +33,7 @@ export class Batch {
     private readonly lotNumber: LotNumber,
     private readonly productId: string,
     private quantity: Quantity,
-    private unitCost: UnitCost,
+    private readonly unitCost: UnitCost,
     private status: BatchStatus,
     private expiresAt: Date,
     private readonly createdBy: string,
@@ -71,6 +71,24 @@ export class Batch {
       props.createdAt,
       props.updatedAt,
     );
+  }
+
+  public adjustStock(delta: number): void {
+    this.quantity = this.quantity.adjust(delta);
+
+    this.updatedAt = new Date();
+  }
+
+  public increaseStock(quantity: number): void {
+    this.quantity = this.quantity.increase(quantity);
+
+    this.updatedAt = new Date();
+  }
+
+  public decreaseStock(quantity: number): void {
+    this.quantity = this.quantity.decrease(quantity);
+
+    this.updatedAt = new Date();
   }
 
   public getTotalCost(): string {

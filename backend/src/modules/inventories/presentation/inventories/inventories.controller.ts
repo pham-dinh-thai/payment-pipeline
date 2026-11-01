@@ -4,11 +4,14 @@ import {
   Logger,
   Param,
   ParseUUIDPipe,
+  Patch,
   Post,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { AddBatchRequest } from './requests/add-batch.request';
 import { AddBatchCommand } from '../../application/commands/add-batch/add-batch.command';
+import { AdjustBatchStockRequest } from './requests/adjust-batch-stock.request';
+import { AdjustBatchStockCommand } from '../../application/commands/adjust-batch-stock/adjust-batch-stock.command';
 
 @Controller('inventories')
 export class InventoriesController {
@@ -35,5 +38,18 @@ export class InventoriesController {
     this.logger.log('Batch added', result);
 
     return result;
+  }
+
+  @Patch(':productId/adjust/:batchId')
+  public async adjustBatchStock(
+    @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
+    @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
+    @Body() request: AdjustBatchStockRequest,
+  ): Promise<void> {
+    await this.commandBus.execute(
+      new AdjustBatchStockCommand(productId, batchId, request.delta),
+    );
+
+    this.logger.log('Batch updated', request);
   }
 }

@@ -1,3 +1,4 @@
+import { NotFoundException } from '@nestjs/common';
 import { BatchStatus } from './batch/batch-status.enum';
 import { Batch, FromPersistentBatchProps } from './batch/batch.entity';
 
@@ -13,6 +14,7 @@ export type AddBatchProps = {
 
 export class Inventory {
   private readonly newBatches: Batch[] = [];
+  private readonly updatdedBatches: Batch[] = [];
 
   private constructor(
     private readonly productId: string,
@@ -23,14 +25,8 @@ export class Inventory {
     return new Inventory(productId, []);
   }
 
-  public static fromPersistent(
-    productId: string,
-    batches: FromPersistentBatchProps[],
-  ): Inventory {
-    return new Inventory(
-      productId,
-      batches.map((batch) => Batch.fromPersistent(batch)),
-    );
+  public static fromPersistent(productId: string, batches: Batch[]): Inventory {
+    return new Inventory(productId, batches);
   }
 
   public addBatch(props: AddBatchProps): { batchId: string } {
@@ -50,6 +46,30 @@ export class Inventory {
     return { batchId: batch.getId() };
   }
 
+  public adjustStock(batchId: string, delta: number): void {
+    const batch = this.findBatchById(batchId);
+
+    batch.adjustStock(delta);
+
+    this.updatdedBatches.push(batch);
+  }
+
+  public increaseStock(batchId: string, delta: number): void {
+    const batch = this.findBatchById(batchId);
+
+    batch.increaseStock(delta);
+
+    this.updatdedBatches.push(batch);
+  }
+
+  public decreaseStock(batchId: string, delta: number): void {
+    const batch = this.findBatchById(batchId);
+
+    batch.decreaseStock(delta);
+
+    this.updatdedBatches.push(batch);
+  }
+
   public getProductId(): string {
     return this.productId;
   }
@@ -60,5 +80,19 @@ export class Inventory {
 
   public getNewBatches(): Batch[] {
     return [...this.newBatches];
+  }
+
+  public getUpdatedBatches(): Batch[] {
+    return [...this.updatdedBatches];
+  }
+
+  private findBatchById(batchId: string): Batch {
+    const batch = this.batches.find((b) => b.getId() === batchId);
+
+    if (!batch) {
+      throw new NotFoundException(`Batch id ${batchId} not found`);
+    }
+
+    return batch;
   }
 }

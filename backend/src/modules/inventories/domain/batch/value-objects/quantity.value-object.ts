@@ -1,4 +1,7 @@
-import { UnprocessableEntityException } from '@nestjs/common';
+import {
+  BadRequestException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 
 export class Quantity {
   private constructor(private readonly value: number) {}
@@ -13,6 +16,18 @@ export class Quantity {
     }
 
     return new Quantity(value);
+  }
+
+  public adjust(delta: number): Quantity {
+    return Quantity.create(this.value + delta);
+  }
+
+  public increase(quantity: number): Quantity {
+    return Quantity.create(this.value + quantity);
+  }
+
+  public decrease(quantity: number): Quantity {
+    return Quantity.create(this.value - quantity);
   }
 
   public getValue(): number {

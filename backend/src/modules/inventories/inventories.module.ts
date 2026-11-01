@@ -7,6 +7,7 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MikroBatch } from './infrastructure/entities/mikro-batch.entity';
 import { MikroInventory } from './infrastructure/entities/mikro-inventory.entity';
 import { ProductsModule } from '../products/products.module';
+import { AdjustBatchStockHandler } from './application/commands/adjust-batch-stock/adjust-batch-stock.handler';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ProductsModule } from '../products/products.module';
   providers: [
     { provide: INVENTORIES_REPOSITORY, useClass: MikroInventoriesRepository },
     AddBatchHandler,
+    AdjustBatchStockHandler,
   ],
 })
 export class InventoriesModule {}

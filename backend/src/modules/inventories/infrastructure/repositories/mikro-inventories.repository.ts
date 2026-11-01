@@ -1,5 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { IInventoriesRepository } from '../../domain/inventories.repository';
+import { Injectable } from '@nestjs/common';
+import {
+  FindInventoryOptions,
+  IInventoriesRepository,
+} from '../../domain/inventories.repository';
 import { EntityManager, LockMode } from '@mikro-orm/core';
 import { Inventory } from '../../domain/inventory.aggregate';
 import { MikroBatch } from '../entities/mikro-batch.entity';
@@ -9,7 +12,10 @@ import { BatchMapper } from '../mappers/batch.mapper';
 export class MikroInventoriesRepository implements IInventoriesRepository {
   public constructor(private readonly entityManager: EntityManager) {}
 
-  public async findByProductId(productId: string): Promise<Inventory | null> {
+  public async findByProductId(
+    productId: string,
+    options: FindInventoryOptions = {},
+  ): Promise<Inventory | null> {
     const mikroBatches = await this.entityManager.find(
       MikroBatch,
       {
@@ -17,6 +23,7 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
       },
       {
         orderBy: { expiresAt: 'asc', createdAt: 'asc', id: 'asc' },
+        lockMode: options.forUpdate ? LockMode.PESSIMISTIC_WRITE : undefined,
       },
     );
 
@@ -30,45 +37,20 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
     );
   }
 
-  public async adjustBatchStock(
-    productId: string,
-    batchId: string,
-    delta: number,
-  ): Promise<number> {
-    return this.entityManager.transactional(async (em) => {
-      const mikroBatch = await em.findOne(
+  public async save(inventory: Inventory): Promise<Inventory> {
+    for (const batch of inventory.getNewBatches()) {
+      await this.entityManager.insert(
         MikroBatch,
-        { id: batchId, productId },
-        { lockMode: LockMode.PESSIMISTIC_WRITE },
+        BatchMapper.toMikroOrm(batch),
       );
+    }
 
-      if (!mikroBatch) {
-        throw new NotFoundException(
-          `Batch id ${batchId} not found for product ${productId}`,
-        );
-      }
-
-      const batch = BatchMapper.toDomain(mikroBatch);
-
-      batch.adjustStock(delta);
-
-      await em.nativeUpdate(
+    for (const batch of inventory.getUpdatedBatches()) {
+      await this.entityManager.nativeUpdate(
         MikroBatch,
-        { id: batchId },
+        { id: batch.getId() },
         { quantity: batch.getQuantity(), updatedAt: batch.getUpdatedAt() },
       );
-
-      return batch.getQuantity();
-    });
-  }
-
-  public async save(inventory: Inventory): Promise<Inventory> {
-    if (inventory.getNewBatches().length > 0) {
-      await this.entityManager.transactional(async (em) => {
-        for (const batch of inventory.getNewBatches()) {
-          await em.insert(MikroBatch, BatchMapper.toMikroOrm(batch));
-        }
-      });
     }
 
     return inventory;

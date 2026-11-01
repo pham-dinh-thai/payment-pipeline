@@ -1,13 +1,14 @@
 import { Inventory } from './inventory.aggregate';
 
-export interface IInventoriesRepository {
-  findByProductId(productId: string): Promise<Inventory | null>;
+export type FindInventoryOptions = {
+  forUpdate?: boolean;
+};
 
-  adjustBatchStock(
+export interface IInventoriesRepository {
+  findByProductId(
     productId: string,
-    batchId: string,
-    delta: number,
-  ): Promise<number>;
+    options?: FindInventoryOptions,
+  ): Promise<Inventory | null>;
 
   save(inventory: Inventory): Promise<Inventory>;
 }

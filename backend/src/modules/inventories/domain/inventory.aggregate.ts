@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { BatchStatus } from './batch/batch-status.enum';
-import { Batch, FromPersistentBatchProps } from './batch/batch.entity';
+import { Batch } from './batch/batch.entity';
 
 export type AddBatchProps = {
   lotNumber: string;
@@ -14,7 +14,7 @@ export type AddBatchProps = {
 
 export class Inventory {
   private readonly newBatches: Batch[] = [];
-  private readonly updatdedBatches: Batch[] = [];
+  private readonly updatedBatches: Batch[] = [];
 
   private constructor(
     private readonly productId: string,
@@ -51,7 +51,7 @@ export class Inventory {
 
     batch.adjustStock(delta);
 
-    this.updatdedBatches.push(batch);
+    this.updatedBatches.push(batch);
   }
 
   public increaseStock(batchId: string, delta: number): void {
@@ -59,7 +59,7 @@ export class Inventory {
 
     batch.increaseStock(delta);
 
-    this.updatdedBatches.push(batch);
+    this.updatedBatches.push(batch);
   }
 
   public decreaseStock(batchId: string, delta: number): void {
@@ -67,7 +67,7 @@ export class Inventory {
 
     batch.decreaseStock(delta);
 
-    this.updatdedBatches.push(batch);
+    this.updatedBatches.push(batch);
   }
 
   public getProductId(): string {
@@ -83,7 +83,7 @@ export class Inventory {
   }
 
   public getUpdatedBatches(): Batch[] {
-    return [...this.updatdedBatches];
+    return [...this.updatedBatches];
   }
 
   private findBatchById(batchId: string): Batch {

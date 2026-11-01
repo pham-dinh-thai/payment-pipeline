@@ -16,6 +16,12 @@ describe('CreateProductHandler', () => {
     handler = new CreateProductHandler({
       create,
       findAll: jest.fn<() => Promise<Product[]>>().mockResolvedValue([]),
+      findById: jest
+        .fn<(id: string) => Promise<Product | null>>()
+        .mockResolvedValue(null),
+      existsById: jest
+        .fn<(id: string) => Promise<boolean>>()
+        .mockResolvedValue(true),
     });
   });
 

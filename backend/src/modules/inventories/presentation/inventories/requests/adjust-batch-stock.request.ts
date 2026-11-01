@@ -1,7 +1,7 @@
-import { IsInt, IsNotEmpty } from 'class-validator';
+import { IsInt, NotEquals } from 'class-validator';
 
 export class AdjustBatchStockRequest {
   @IsInt()
-  @IsNotEmpty()
+  @NotEquals(0)
   delta!: number;
 }

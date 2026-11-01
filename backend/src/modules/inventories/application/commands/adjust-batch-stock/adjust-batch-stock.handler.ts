@@ -24,11 +24,7 @@ export class AdjustBatchStockHandler implements ICommandHandler<AdjustBatchStock
       );
     }
 
-    try {
-      inventory.adjustStock(command.batchId, command.delta);
-    } catch (e) {
-      throw e;
-    }
+    inventory.adjustStock(command.batchId, command.delta);
 
     await this.inventoriesRepository.save(inventory);
   }

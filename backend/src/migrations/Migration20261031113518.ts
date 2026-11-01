@@ -1,7 +1,6 @@
 import { Migration } from '@mikro-orm/migrations';
 
 export class Migration20261031113518 extends Migration {
-
   override name = 'Migration20261031113518';
 
   override up(): void | Promise<void> {
@@ -19,5 +18,4 @@ export class Migration20261031113518 extends Migration {
   override down(): void | Promise<void> {
     this.addSql(`drop view if exists "inventories" cascade;`);
   }
-
 }

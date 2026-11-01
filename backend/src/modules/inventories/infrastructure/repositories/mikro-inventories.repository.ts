@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IInventoriesRepository } from '../../domain/inventories.repository';
-import { EntityManager, p } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/core';
 import { Inventory } from '../../domain/inventory.aggregate';
 import { MikroBatch } from '../entities/mikro-batch.entity';
 import { BatchMapper } from '../mappers/batch.mapper';

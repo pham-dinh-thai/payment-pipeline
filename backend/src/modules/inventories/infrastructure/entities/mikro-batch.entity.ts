@@ -1,11 +1,13 @@
 import {
   Entity,
   Enum,
+  ManyToOne,
   PrimaryKey,
   Property,
   Unique,
 } from '@mikro-orm/decorators/legacy';
 import { BatchStatus } from '../../domain/batch/batch-status.enum';
+import { MikroProduct } from '../../../products/infrastructure/entities/mikro-product.entity';
 
 @Entity({ tableName: 'batches' })
 @Unique({ properties: ['productId', 'lotNumber'] })
@@ -16,7 +18,12 @@ export class MikroBatch {
   @Property({ fieldName: 'lot_number', type: 'string' })
   lotNumber!: string;
 
-  @Property({ fieldName: 'product_id', type: 'uuid' })
+  @ManyToOne(() => MikroProduct, {
+    fieldName: 'product_id',
+    mapToPk: true,
+    updateRule: 'cascade',
+    deleteRule: 'no action',
+  })
   productId!: string;
 
   @Property({ type: 'int' })

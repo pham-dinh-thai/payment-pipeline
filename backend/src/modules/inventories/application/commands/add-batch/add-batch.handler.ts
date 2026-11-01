@@ -25,7 +25,9 @@ export class AddBatchHandler implements ICommandHandler<AddBatchCommand> {
 
   public async execute(command: AddBatchCommand): Promise<{ batchId: string }> {
     if (!(await this.productsRepository.existsById(command.productId))) {
-      throw new NotFoundException(`Product id ${command.productId} not found`);
+      throw new NotFoundException(
+        `Inventory with productId ${command.productId} not found`,
+      );
     }
 
     let inventory = await this.inventoriesRepository.findByProductId(

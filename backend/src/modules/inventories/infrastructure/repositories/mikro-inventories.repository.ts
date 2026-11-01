@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { IInventoriesRepository } from '../../domain/inventories.repository';
-import { EntityManager, p } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/core';
 import { Inventory } from '../../domain/inventory.aggregate';
 import { MikroBatch } from '../entities/mikro-batch.entity';
+import { BatchMapper } from '../mappers/batch.mapper';
 
 @Injectable()
 export class MikroInventoriesRepository implements IInventoriesRepository {
@@ -25,36 +26,32 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
 
     return Inventory.fromPersistent(
       productId,
-      mikroBatches.map((mikroBatch) => ({
-        id: mikroBatch.id,
-        lotNumber: mikroBatch.lotNumber,
-        productId: mikroBatch.productId,
-        quantity: mikroBatch.quantity,
-        unitCost: mikroBatch.unitCost,
-        status: mikroBatch.status,
-        expiresAt: mikroBatch.expiresAt,
-        createdBy: mikroBatch.createdBy,
-        createdAt: mikroBatch.createdAt,
-        updatedAt: mikroBatch.updatedAt,
-      })),
+      mikroBatches.map((mikroBatch) => BatchMapper.toDomain(mikroBatch)),
     );
   }
 
   public async save(inventory: Inventory): Promise<Inventory> {
     const result = await this.entityManager.transactional(async (em) => {
-      for (const batch of inventory.getNewBatches()) {
-        await em.upsert(MikroBatch, {
-          id: batch.getId(),
-          lotNumber: batch.getLotNumber(),
-          productId: batch.getProductId(),
-          quantity: batch.getQuantity(),
-          unitCost: batch.getUnitCost(),
-          status: batch.getStatus(),
-          expiresAt: batch.getExpiresAt(),
-          createdBy: batch.getCreatedBy(),
-          createdAt: batch.getCreatedAt(),
-          updatedAt: batch.getUpdatedAt(),
-        });
+      if (inventory.getNewBatches().length > 0) {
+        for (const batch of inventory.getNewBatches()) {
+          await em.insert(MikroBatch, BatchMapper.toMikroOrm(batch));
+        }
+      }
+
+      if (inventory.getUpdatedBatches().length > 0) {
+        for (const batch of inventory.getUpdatedBatches()) {
+          // Only update non-readonly fields
+          await em.nativeUpdate(
+            MikroBatch,
+            { id: batch.getId() },
+            {
+              quantity: batch.getQuantity(),
+              status: batch.getStatus(),
+              expiresAt: batch.getExpiresAt(),
+              updatedAt: batch.getUpdatedAt(),
+            },
+          );
+        }
       }
 
       return inventory;

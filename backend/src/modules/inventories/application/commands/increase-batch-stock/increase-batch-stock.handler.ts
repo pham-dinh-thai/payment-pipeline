@@ -1,6 +1,6 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { IncreaseBatchStockCommand } from './increase-batch-stock.command';
-import { Inject, NotFoundException } from '@nestjs/common';
+import { Inject } from '@nestjs/common';
 import {
   type IInventoriesRepository,
   INVENTORIES_REPOSITORY,
@@ -13,19 +13,11 @@ export class IncreaseBatchStockHandler implements ICommandHandler<IncreaseBatchS
     private readonly inventoriesRepository: IInventoriesRepository,
   ) {}
 
-  public async execute(command: IncreaseBatchStockCommand): Promise<void> {
-    const inventory = await this.inventoriesRepository.findByProductId(
+  public async execute(command: IncreaseBatchStockCommand): Promise<number> {
+    return this.inventoriesRepository.adjustBatchStock(
       command.productId,
+      command.batchId,
+      command.quantity,
     );
-
-    if (!inventory) {
-      throw new NotFoundException(
-        `Inventory with productId ${command.productId} not found`,
-      );
-    }
-
-    inventory.increaseStock(command.batchId, command.quantity);
-
-    await this.inventoriesRepository.save(inventory);
   }
 }

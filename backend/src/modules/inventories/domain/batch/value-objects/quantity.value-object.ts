@@ -19,14 +19,6 @@ export class Quantity {
     return Quantity.create(this.value + delta);
   }
 
-  public increase(quantity: number): Quantity {
-    return Quantity.create(this.value + quantity);
-  }
-
-  public decrease(quantity: number): Quantity {
-    return Quantity.create(this.value - quantity);
-  }
-
   public getValue(): number {
     return this.value;
   }

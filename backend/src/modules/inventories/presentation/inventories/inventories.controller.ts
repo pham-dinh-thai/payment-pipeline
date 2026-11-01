@@ -49,12 +49,14 @@ export class InventoriesController {
     @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
     @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
     @Body() request: AdjustBatchStockRequest,
-  ): Promise<void> {
-    await this.commandBus.execute(
+  ): Promise<{ quantity: number }> {
+    const quantity = await this.commandBus.execute(
       new AdjustBatchStockCommand(productId, batchId, request.delta),
     );
 
     this.logger.log(`Batch ${batchId} adjusted`, request);
+
+    return { quantity };
   }
 
   @Patch(':productId/increase/:batchId')
@@ -62,12 +64,14 @@ export class InventoriesController {
     @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
     @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
     @Body() request: IncreaseBatchStockRequest,
-  ): Promise<void> {
-    await this.commandBus.execute(
+  ): Promise<{ quantity: number }> {
+    const quantity = await this.commandBus.execute(
       new IncreaseBatchStockCommand(productId, batchId, request.quantity),
     );
 
     this.logger.log(`Batch ${batchId} increased`, request);
+
+    return { quantity };
   }
 
   @Patch(':productId/decrease/:batchId')
@@ -75,11 +79,13 @@ export class InventoriesController {
     @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
     @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
     @Body() request: DecreaseBatchStockRequest,
-  ): Promise<void> {
-    await this.commandBus.execute(
+  ): Promise<{ quantity: number }> {
+    const quantity = await this.commandBus.execute(
       new DecreaseBatchStockCommand(productId, batchId, request.quantity),
     );
 
-    this.logger.log(`Batch ${batchId} increased`, request);
+    this.logger.log(`Batch ${batchId} decreased`, request);
+
+    return { quantity };
   }
 }

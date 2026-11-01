@@ -79,18 +79,6 @@ export class Batch {
     this.updatedAt = new Date();
   }
 
-  public increaseStock(quantity: number): void {
-    this.quantity = this.quantity.increase(quantity);
-
-    this.updatedAt = new Date();
-  }
-
-  public decreaseStock(quantity: number): void {
-    this.quantity = this.quantity.decrease(quantity);
-
-    this.updatedAt = new Date();
-  }
-
   public getTotalCost(): string {
     return this.unitCost.getTotal(this.quantity.getValue());
   }

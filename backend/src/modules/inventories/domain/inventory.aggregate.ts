@@ -1,4 +1,3 @@
-import { NotFoundException } from '@nestjs/common';
 import { BatchStatus } from './batch/batch-status.enum';
 import { Batch } from './batch/batch.entity';
 
@@ -14,7 +13,6 @@ export type AddBatchProps = {
 
 export class Inventory {
   private readonly newBatches: Batch[] = [];
-  private readonly updatedBatches: Batch[] = [];
 
   private constructor(
     private readonly productId: string,
@@ -46,30 +44,6 @@ export class Inventory {
     return { batchId: batch.getId() };
   }
 
-  public adjustStock(batchId: string, delta: number): void {
-    const batch = this.findBatchById(batchId);
-
-    batch.adjustStock(delta);
-
-    this.updatedBatches.push(batch);
-  }
-
-  public increaseStock(batchId: string, delta: number): void {
-    const batch = this.findBatchById(batchId);
-
-    batch.increaseStock(delta);
-
-    this.updatedBatches.push(batch);
-  }
-
-  public decreaseStock(batchId: string, delta: number): void {
-    const batch = this.findBatchById(batchId);
-
-    batch.decreaseStock(delta);
-
-    this.updatedBatches.push(batch);
-  }
-
   public getProductId(): string {
     return this.productId;
   }
@@ -80,19 +54,5 @@ export class Inventory {
 
   public getNewBatches(): Batch[] {
     return [...this.newBatches];
-  }
-
-  public getUpdatedBatches(): Batch[] {
-    return [...this.updatedBatches];
-  }
-
-  private findBatchById(batchId: string): Batch {
-    const batch = this.batches.find((b) => b.getId() === batchId);
-
-    if (!batch) {
-      throw new NotFoundException(`Batch id ${batchId} not found`);
-    }
-
-    return batch;
   }
 }

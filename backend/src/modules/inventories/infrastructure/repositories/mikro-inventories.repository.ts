@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { IInventoriesRepository } from '../../domain/inventories.repository';
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, LockMode } from '@mikro-orm/core';
 import { Inventory } from '../../domain/inventory.aggregate';
 import { MikroBatch } from '../entities/mikro-batch.entity';
 import { BatchMapper } from '../mappers/batch.mapper';
@@ -30,33 +30,47 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
     );
   }
 
+  public async adjustBatchStock(
+    productId: string,
+    batchId: string,
+    delta: number,
+  ): Promise<number> {
+    return this.entityManager.transactional(async (em) => {
+      const mikroBatch = await em.findOne(
+        MikroBatch,
+        { id: batchId, productId },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      );
+
+      if (!mikroBatch) {
+        throw new NotFoundException(
+          `Batch id ${batchId} not found for product ${productId}`,
+        );
+      }
+
+      const batch = BatchMapper.toDomain(mikroBatch);
+
+      batch.adjustStock(delta);
+
+      await em.nativeUpdate(
+        MikroBatch,
+        { id: batchId },
+        { quantity: batch.getQuantity(), updatedAt: batch.getUpdatedAt() },
+      );
+
+      return batch.getQuantity();
+    });
+  }
+
   public async save(inventory: Inventory): Promise<Inventory> {
-    const result = await this.entityManager.transactional(async (em) => {
-      if (inventory.getNewBatches().length > 0) {
+    if (inventory.getNewBatches().length > 0) {
+      await this.entityManager.transactional(async (em) => {
         for (const batch of inventory.getNewBatches()) {
           await em.insert(MikroBatch, BatchMapper.toMikroOrm(batch));
         }
-      }
+      });
+    }
 
-      if (inventory.getUpdatedBatches().length > 0) {
-        for (const batch of inventory.getUpdatedBatches()) {
-          // Only update non-readonly fields
-          await em.nativeUpdate(
-            MikroBatch,
-            { id: batch.getId() },
-            {
-              quantity: batch.getQuantity(),
-              status: batch.getStatus(),
-              expiresAt: batch.getExpiresAt(),
-              updatedAt: batch.getUpdatedAt(),
-            },
-          );
-        }
-      }
-
-      return inventory;
-    });
-
-    return result;
+    return inventory;
   }
 }

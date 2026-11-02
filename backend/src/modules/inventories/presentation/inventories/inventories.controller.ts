@@ -15,13 +15,13 @@ import { ReceiveBatchStockCommand } from '../../application/commands/receive-bat
 import { ReceiveBatchStockRequest } from './requests/receive-batch-stock.request';
 import { IssueBatchStockCommand } from '../../application/commands/issue-batch-stock/issue-batch-stock.command';
 import { IssueBatchStockRequest } from './requests/issue-batch-stock.request';
-import { TransactionalCommandBus } from '../../../../shared/infrastructure/cqrs/transactional-command-bus';
+import { CommandBus } from '@nestjs/cqrs';
 
 @Controller('inventories')
 export class InventoriesController {
   private readonly logger = new Logger(InventoriesController.name);
 
-  public constructor(private readonly commandBus: TransactionalCommandBus) {}
+  public constructor(private readonly commandBus: CommandBus) {}
 
   @Post(':productId')
   public async addBatch(

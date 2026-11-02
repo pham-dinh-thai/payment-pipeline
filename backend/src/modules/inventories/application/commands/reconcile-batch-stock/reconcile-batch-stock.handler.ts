@@ -5,33 +5,42 @@ import {
   type IInventoriesRepository,
   INVENTORIES_REPOSITORY,
 } from '../../../domain/inventories.repository';
+import {
+  type IUnitOfWork,
+  UNIT_OF_WORK,
+} from '../../../../../shared/application/unit-of-work';
 
 @CommandHandler(ReconcileBatchStockCommand)
 export class ReconcileBatchStockHandler implements ICommandHandler<ReconcileBatchStockCommand> {
   public constructor(
     @Inject(INVENTORIES_REPOSITORY)
     private readonly inventoriesRepository: IInventoriesRepository,
+
+    @Inject(UNIT_OF_WORK)
+    private readonly unitOfWork: IUnitOfWork,
   ) {}
 
   public async execute(command: ReconcileBatchStockCommand): Promise<number> {
-    const inventory = await this.inventoriesRepository.findByProductId(
-      command.productId,
-      { forUpdate: true },
-    );
-
-    if (!inventory) {
-      throw new NotFoundException(
-        `Inventory with productId ${command.productId} not found`,
+    return this.unitOfWork.run(async () => {
+      const inventory = await this.inventoriesRepository.findByProductId(
+        command.productId,
+        { forUpdate: true },
       );
-    }
 
-    const quantity = inventory.reconcileStock(
-      command.batchId,
-      command.countedQuantity,
-    );
+      if (!inventory) {
+        throw new NotFoundException(
+          `Inventory with productId ${command.productId} not found`,
+        );
+      }
 
-    await this.inventoriesRepository.save(inventory);
+      const quantity = inventory.reconcileStock(
+        command.batchId,
+        command.countedQuantity,
+      );
 
-    return quantity;
+      await this.inventoriesRepository.save(inventory);
+
+      return quantity;
+    });
   }
 }

@@ -1,6 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { IInventoriesRepository } from '../../domain/inventories.repository';
-import { EntityManager } from '@mikro-orm/core';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  FindInventoryOptions,
+  IInventoriesRepository,
+} from '../../domain/inventories.repository';
+import {
+  EntityManager,
+  ForeignKeyConstraintViolationException,
+  LockMode,
+  UniqueConstraintViolationException,
+} from '@mikro-orm/core';
 import { Inventory } from '../../domain/inventory.aggregate';
 import { MikroBatch } from '../entities/mikro-batch.entity';
 import { BatchMapper } from '../mappers/batch.mapper';
@@ -9,7 +21,10 @@ import { BatchMapper } from '../mappers/batch.mapper';
 export class MikroInventoriesRepository implements IInventoriesRepository {
   public constructor(private readonly entityManager: EntityManager) {}
 
-  public async findByProductId(productId: string): Promise<Inventory | null> {
+  public async findByProductId(
+    productId: string,
+    options: FindInventoryOptions = {},
+  ): Promise<Inventory | null> {
     const mikroBatches = await this.entityManager.find(
       MikroBatch,
       {
@@ -17,6 +32,7 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
       },
       {
         orderBy: { expiresAt: 'asc', createdAt: 'asc', id: 'asc' },
+        lockMode: options.forUpdate ? LockMode.PESSIMISTIC_WRITE : undefined,
       },
     );
 
@@ -31,32 +47,35 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
   }
 
   public async save(inventory: Inventory): Promise<Inventory> {
-    const result = await this.entityManager.transactional(async (em) => {
-      if (inventory.getNewBatches().length > 0) {
-        for (const batch of inventory.getNewBatches()) {
-          await em.insert(MikroBatch, BatchMapper.toMikroOrm(batch));
-        }
+    try {
+      for (const batch of inventory.getNewBatches()) {
+        await this.entityManager.insert(
+          MikroBatch,
+          BatchMapper.toMikroOrm(batch),
+        );
       }
 
-      if (inventory.getUpdatedBatches().length > 0) {
-        for (const batch of inventory.getUpdatedBatches()) {
-          // Only update non-readonly fields
-          await em.nativeUpdate(
-            MikroBatch,
-            { id: batch.getId() },
-            {
-              quantity: batch.getQuantity(),
-              status: batch.getStatus(),
-              expiresAt: batch.getExpiresAt(),
-              updatedAt: batch.getUpdatedAt(),
-            },
-          );
-        }
+      for (const batch of inventory.getUpdatedBatches()) {
+        await this.entityManager.nativeUpdate(
+          MikroBatch,
+          { id: batch.getId() },
+          { quantity: batch.getQuantity(), updatedAt: batch.getUpdatedAt() },
+        );
+      }
+    } catch (e) {
+      if (e instanceof UniqueConstraintViolationException) {
+        throw new ConflictException(
+          'Batch already exists for this product and lot number',
+        );
       }
 
-      return inventory;
-    });
+      if (e instanceof ForeignKeyConstraintViolationException) {
+        throw new NotFoundException('Product not found');
+      }
 
-    return result;
+      throw e;
+    }
+
+    return inventory;
   }
 }

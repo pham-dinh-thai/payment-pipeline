@@ -46,28 +46,34 @@ export class Inventory {
     return { batchId: batch.getId() };
   }
 
-  public adjustStock(batchId: string, delta: number): void {
+  public receiveStock(batchId: string, quantity: number): number {
     const batch = this.findBatchById(batchId);
 
-    batch.adjustStock(delta);
+    batch.receive(quantity);
 
     this.updatedBatches.push(batch);
+
+    return batch.getQuantity();
   }
 
-  public increaseStock(batchId: string, delta: number): void {
+  public issueStock(batchId: string, quantity: number): number {
     const batch = this.findBatchById(batchId);
 
-    batch.increaseStock(delta);
+    batch.issue(quantity);
 
     this.updatedBatches.push(batch);
+
+    return batch.getQuantity();
   }
 
-  public decreaseStock(batchId: string, delta: number): void {
+  public reconcileStock(batchId: string, countedQuantity: number): number {
     const batch = this.findBatchById(batchId);
 
-    batch.decreaseStock(delta);
+    batch.reconcile(countedQuantity);
 
     this.updatedBatches.push(batch);
+
+    return batch.getQuantity();
   }
 
   public getProductId(): string {

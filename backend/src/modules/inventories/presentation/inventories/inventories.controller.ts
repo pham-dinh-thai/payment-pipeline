@@ -7,15 +7,15 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
 import { AddBatchRequest } from './requests/add-batch.request';
 import { AddBatchCommand } from '../../application/commands/add-batch/add-batch.command';
-import { AdjustBatchStockRequest } from './requests/adjust-batch-stock.request';
-import { AdjustBatchStockCommand } from '../../application/commands/adjust-batch-stock/adjust-batch-stock.command';
-import { IncreaseBatchStockCommand } from '../../application/commands/increase-batch-stock/increase-batch-stock.command';
-import { IncreaseBatchStockRequest } from './requests/increase-batch-stock.request';
-import { DecreaseBatchStockRequest } from './requests/decrease-batch-stock.request';
-import { DecreaseBatchStockCommand } from '../../application/commands/decrease-batch-stock/decrease-batch-stock.command';
+import { ReconcileBatchStockRequest } from './requests/reconcile-batch-stock.request';
+import { ReconcileBatchStockCommand } from '../../application/commands/reconcile-batch-stock/reconcile-batch-stock.command';
+import { ReceiveBatchStockCommand } from '../../application/commands/receive-batch-stock/receive-batch-stock.command';
+import { ReceiveBatchStockRequest } from './requests/receive-batch-stock.request';
+import { IssueBatchStockCommand } from '../../application/commands/issue-batch-stock/issue-batch-stock.command';
+import { IssueBatchStockRequest } from './requests/issue-batch-stock.request';
+import { CommandBus } from '@nestjs/cqrs';
 
 @Controller('inventories')
 export class InventoriesController {
@@ -44,42 +44,48 @@ export class InventoriesController {
     return result;
   }
 
-  @Patch(':productId/adjust/:batchId')
-  public async adjustBatchStock(
+  @Patch(':productId/receive/:batchId')
+  public async receiveBatchStock(
     @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
     @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
-    @Body() request: AdjustBatchStockRequest,
-  ): Promise<void> {
-    await this.commandBus.execute(
-      new AdjustBatchStockCommand(productId, batchId, request.delta),
+    @Body() request: ReceiveBatchStockRequest,
+  ): Promise<{ quantity: number }> {
+    const quantity = await this.commandBus.execute(
+      new ReceiveBatchStockCommand(productId, batchId, request.quantity),
     );
 
-    this.logger.log(`Batch ${batchId} adjusted`, request);
+    this.logger.log(`Batch ${batchId} received`, request);
+
+    return { quantity };
   }
 
-  @Patch(':productId/increase/:batchId')
-  public async increaseBatchStock(
+  @Patch(':productId/issue/:batchId')
+  public async issueBatchStock(
     @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
     @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
-    @Body() request: IncreaseBatchStockRequest,
-  ): Promise<void> {
-    await this.commandBus.execute(
-      new IncreaseBatchStockCommand(productId, batchId, request.quantity),
+    @Body() request: IssueBatchStockRequest,
+  ): Promise<{ quantity: number }> {
+    const quantity = await this.commandBus.execute(
+      new IssueBatchStockCommand(productId, batchId, request.quantity),
     );
 
-    this.logger.log(`Batch ${batchId} increased`, request);
+    this.logger.log(`Batch ${batchId} issued`, request);
+
+    return { quantity };
   }
 
-  @Patch(':productId/decrease/:batchId')
-  public async decreaseBatchStock(
+  @Patch(':productId/reconcile/:batchId')
+  public async reconcileBatchStock(
     @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
     @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
-    @Body() request: DecreaseBatchStockRequest,
-  ): Promise<void> {
-    await this.commandBus.execute(
-      new DecreaseBatchStockCommand(productId, batchId, request.quantity),
+    @Body() request: ReconcileBatchStockRequest,
+  ): Promise<{ quantity: number }> {
+    const quantity = await this.commandBus.execute(
+      new ReconcileBatchStockCommand(productId, batchId, request.quantity),
     );
 
-    this.logger.log(`Batch ${batchId} increased`, request);
+    this.logger.log(`Batch ${batchId} reconciled`, request);
+
+    return { quantity };
   }
 }

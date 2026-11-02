@@ -6,19 +6,22 @@ import { AddBatchHandler } from './application/commands/add-batch/add-batch.hand
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MikroBatch } from './infrastructure/entities/mikro-batch.entity';
 import { MikroInventory } from './infrastructure/entities/mikro-inventory.entity';
-import { AdjustBatchStockHandler } from './application/commands/adjust-batch-stock/adjust-batch-stock.handler';
-import { IncreaseBatchStockHandler } from './application/commands/increase-batch-stock/increase-batch-stock.handler';
-import { DecreaseBatchStockHandler } from './application/commands/decrease-batch-stock/decrease-batch-stock.handler';
+import { ReconcileBatchStockHandler } from './application/commands/reconcile-batch-stock/reconcile-batch-stock.handler';
+import { ReceiveBatchStockHandler } from './application/commands/receive-batch-stock/receive-batch-stock.handler';
+import { IssueBatchStockHandler } from './application/commands/issue-batch-stock/issue-batch-stock.handler';
+import { UNIT_OF_WORK } from '../../shared/application/unit-of-work';
+import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-unit-of-work';
 
 @Module({
   imports: [MikroOrmModule.forFeature([MikroBatch, MikroInventory])],
   controllers: [InventoriesController],
   providers: [
     { provide: INVENTORIES_REPOSITORY, useClass: MikroInventoriesRepository },
+    { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
     AddBatchHandler,
-    AdjustBatchStockHandler,
-    IncreaseBatchStockHandler,
-    DecreaseBatchStockHandler,
+    ReconcileBatchStockHandler,
+    ReceiveBatchStockHandler,
+    IssueBatchStockHandler,
   ],
 })
 export class InventoriesModule {}

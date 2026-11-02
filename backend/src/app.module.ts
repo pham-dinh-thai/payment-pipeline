@@ -8,6 +8,8 @@ import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { ConfigModule } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { InventoriesModule } from './modules/inventories/inventories.module';
+import { GoodsReceiptsModule } from './modules/goods-receipts/goods-receipts.module';
+import { SuppliersModule } from './modules/suppliers/suppliers.module';
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { InventoriesModule } from './modules/inventories/inventories.module';
     MikroOrmModule.forRoot(mikroOrmConfig),
     CqrsModule.forRoot(),
     InventoriesModule,
+    GoodsReceiptsModule,
+    SuppliersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

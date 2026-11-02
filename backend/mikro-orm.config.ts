@@ -4,6 +4,7 @@ import * as path from 'path';
 import { MikroProduct } from './src/modules/products/infrastructure/entities/mikro-product.entity';
 import { MikroBatch } from './src/modules/inventories/infrastructure/entities/mikro-batch.entity';
 import { MikroInventory } from './src/modules/inventories/infrastructure/entities/mikro-inventory.entity';
+import { MikroSupplier } from './src/modules/suppliers/infrastructure/entities/mikro-supplier.entity';
 
 dotenv.config({ path: path.resolve('../.env') });
 
@@ -14,8 +15,8 @@ export default defineConfig({
   password: process.env.POSTGRES_PASSWORD,
   dbName: process.env.POSTGRES_DB,
 
-  entities: [MikroProduct, MikroBatch, MikroInventory],
-  entitiesTs: [MikroProduct, MikroBatch, MikroInventory],
+  entities: [MikroProduct, MikroBatch, MikroInventory, MikroSupplier],
+  entitiesTs: [MikroProduct, MikroBatch, MikroInventory, MikroSupplier],
 
   debug: process.env.NODE_ENV !== 'production',
 

@@ -5,15 +5,20 @@ import {
   type IInventoriesRepository,
   INVENTORIES_REPOSITORY,
 } from '../../../domain/inventories.repository';
-import { EntityManager } from '@mikro-orm/core';
-import { Transactional } from '@mikro-orm/decorators/legacy';
+import {
+  type IUnitOfWork,
+  UNIT_OF_WORK,
+} from '../../../../../shared/application/unit-of-work';
+import { Transactional } from '../../../../../shared/application/transactional.decorator';
 
 @CommandHandler(ReceiveBatchStockCommand)
 export class ReceiveBatchStockHandler implements ICommandHandler<ReceiveBatchStockCommand> {
   public constructor(
     @Inject(INVENTORIES_REPOSITORY)
     private readonly inventoriesRepository: IInventoriesRepository,
-    private readonly em: EntityManager,
+
+    @Inject(UNIT_OF_WORK)
+    private readonly unitOfWork: IUnitOfWork,
   ) {}
 
   @Transactional()

@@ -1,9 +1,18 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   FindInventoryOptions,
   IInventoriesRepository,
 } from '../../domain/inventories.repository';
-import { EntityManager, LockMode } from '@mikro-orm/core';
+import {
+  EntityManager,
+  ForeignKeyConstraintViolationException,
+  LockMode,
+  UniqueConstraintViolationException,
+} from '@mikro-orm/core';
 import { Inventory } from '../../domain/inventory.aggregate';
 import { MikroBatch } from '../entities/mikro-batch.entity';
 import { BatchMapper } from '../mappers/batch.mapper';
@@ -38,19 +47,33 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
   }
 
   public async save(inventory: Inventory): Promise<Inventory> {
-    for (const batch of inventory.getNewBatches()) {
-      await this.entityManager.insert(
-        MikroBatch,
-        BatchMapper.toMikroOrm(batch),
-      );
-    }
+    try {
+      for (const batch of inventory.getNewBatches()) {
+        await this.entityManager.insert(
+          MikroBatch,
+          BatchMapper.toMikroOrm(batch),
+        );
+      }
 
-    for (const batch of inventory.getUpdatedBatches()) {
-      await this.entityManager.nativeUpdate(
-        MikroBatch,
-        { id: batch.getId() },
-        { quantity: batch.getQuantity(), updatedAt: batch.getUpdatedAt() },
-      );
+      for (const batch of inventory.getUpdatedBatches()) {
+        await this.entityManager.nativeUpdate(
+          MikroBatch,
+          { id: batch.getId() },
+          { quantity: batch.getQuantity(), updatedAt: batch.getUpdatedAt() },
+        );
+      }
+    } catch (e) {
+      if (e instanceof UniqueConstraintViolationException) {
+        throw new ConflictException(
+          'Batch already exists for this product and lot number',
+        );
+      }
+
+      if (e instanceof ForeignKeyConstraintViolationException) {
+        throw new NotFoundException('Product not found');
+      }
+
+      throw e;
     }
 
     return inventory;

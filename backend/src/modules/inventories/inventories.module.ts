@@ -11,6 +11,7 @@ import { ReceiveBatchStockHandler } from './application/commands/receive-batch-s
 import { IssueBatchStockHandler } from './application/commands/issue-batch-stock/issue-batch-stock.handler';
 import { UNIT_OF_WORK } from '../../shared/application/unit-of-work';
 import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-unit-of-work';
+import { TransactionalCommandBus } from '../../shared/infrastructure/cqrs/transactional-command-bus';
 
 @Module({
   imports: [MikroOrmModule.forFeature([MikroBatch, MikroInventory])],
@@ -18,6 +19,7 @@ import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-u
   providers: [
     { provide: INVENTORIES_REPOSITORY, useClass: MikroInventoriesRepository },
     { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
+    TransactionalCommandBus,
     AddBatchHandler,
     ReconcileBatchStockHandler,
     ReceiveBatchStockHandler,

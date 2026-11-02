@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
 import { AddBatchRequest } from './requests/add-batch.request';
 import { AddBatchCommand } from '../../application/commands/add-batch/add-batch.command';
 import { ReconcileBatchStockRequest } from './requests/reconcile-batch-stock.request';
@@ -16,12 +15,13 @@ import { ReceiveBatchStockCommand } from '../../application/commands/receive-bat
 import { ReceiveBatchStockRequest } from './requests/receive-batch-stock.request';
 import { IssueBatchStockCommand } from '../../application/commands/issue-batch-stock/issue-batch-stock.command';
 import { IssueBatchStockRequest } from './requests/issue-batch-stock.request';
+import { TransactionalCommandBus } from '../../../../shared/infrastructure/cqrs/transactional-command-bus';
 
 @Controller('inventories')
 export class InventoriesController {
   private readonly logger = new Logger(InventoriesController.name);
 
-  public constructor(private readonly commandBus: CommandBus) {}
+  public constructor(private readonly commandBus: TransactionalCommandBus) {}
 
   @Post(':productId')
   public async addBatch(

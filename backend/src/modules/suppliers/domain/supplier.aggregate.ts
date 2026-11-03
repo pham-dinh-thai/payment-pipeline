@@ -25,16 +25,12 @@ export type FromPersistentSupplierProps = {
   updatedAt: Date;
 };
 
-const normalizeOptional = (value?: string | null): string | null => {
-  const trimmed = value?.trim();
-
-  return trimmed ? trimmed : null;
-};
-
-const toPhone = (value?: string | null): SupplierPhone | null => {
-  const normalized = normalizeOptional(value);
-
-  return normalized ? SupplierPhone.create(normalized) : null;
+export type UpdateSupplierProps = {
+  name: string;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  taxCode: string | null;
 };
 
 export class Supplier {
@@ -61,10 +57,10 @@ export class Supplier {
       SupplierStatus.ACTIVE,
       now,
       now,
-      toPhone(props.phone),
-      normalizeOptional(props.email),
-      normalizeOptional(props.address),
-      normalizeOptional(props.taxCode),
+      props.phone ? SupplierPhone.create(props.phone) : null,
+      props.email,
+      props.address,
+      props.taxCode,
     );
   }
 
@@ -76,11 +72,21 @@ export class Supplier {
       props.status,
       props.createdAt,
       props.updatedAt,
-      toPhone(props.phone),
-      normalizeOptional(props.email),
-      normalizeOptional(props.address),
-      normalizeOptional(props.taxCode),
+      props.phone ? SupplierPhone.create(props.phone) : null,
+      props.email,
+      props.address,
+      props.taxCode,
     );
+  }
+
+  public update(props: UpdateSupplierProps): void {
+    this.name = props.name;
+    this.phone = props.phone ? SupplierPhone.create(props.phone) : null;
+    this.email = props.email;
+    this.address = props.address;
+    this.taxCode = props.taxCode;
+
+    this.updatedAt = new Date();
   }
 
   public activate(): void {

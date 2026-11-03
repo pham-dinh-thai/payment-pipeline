@@ -1,16 +1,15 @@
 import { Id } from '../../../shared/domain/value-objects/id.value-object';
 import { SupplierStatus } from './enums/supplier-status.enum';
-import { Phone } from './value-objects/phone.value-object';
 import { SupplierCode } from './value-objects/supplier-code.value-object';
-import { SupplierName } from './value-objects/supplier-name.value-object';
+import { SupplierPhone } from './value-objects/supplier-phone.value-object';
 
 export type CreateSupplierProps = {
-  code: string;
+  sequence: number;
   name: string;
-  phone?: string | null;
-  email?: string | null;
-  address?: string | null;
-  taxCode?: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  taxCode: string | null;
 };
 
 export type FromPersistentSupplierProps = {
@@ -32,21 +31,21 @@ const normalizeOptional = (value?: string | null): string | null => {
   return trimmed ? trimmed : null;
 };
 
-const toPhone = (value?: string | null): Phone | null => {
+const toPhone = (value?: string | null): SupplierPhone | null => {
   const normalized = normalizeOptional(value);
 
-  return normalized ? Phone.create(normalized) : null;
+  return normalized ? SupplierPhone.create(normalized) : null;
 };
 
 export class Supplier {
   private constructor(
     private readonly id: Id,
     private readonly code: SupplierCode,
-    private name: SupplierName,
+    private name: string,
     private status: SupplierStatus,
     private readonly createdAt: Date,
     private updatedAt: Date,
-    private phone: Phone | null,
+    private phone: SupplierPhone | null,
     private email: string | null,
     private address: string | null,
     private taxCode: string | null,
@@ -57,8 +56,8 @@ export class Supplier {
 
     return new Supplier(
       Id.generate(),
-      SupplierCode.create(props.code),
-      SupplierName.create(props.name),
+      SupplierCode.fromNumber(props.sequence),
+      props.name,
       SupplierStatus.ACTIVE,
       now,
       now,
@@ -73,7 +72,7 @@ export class Supplier {
     return new Supplier(
       Id.create(props.id),
       SupplierCode.create(props.code),
-      SupplierName.create(props.name),
+      props.name,
       props.status,
       props.createdAt,
       props.updatedAt,
@@ -109,7 +108,7 @@ export class Supplier {
   }
 
   public getName(): string {
-    return this.name.getValue();
+    return this.name;
   }
 
   public getStatus(): SupplierStatus {

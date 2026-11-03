@@ -1,25 +1,37 @@
 import { UnprocessableEntityException } from '@nestjs/common';
 
 export class SupplierCode {
-  private static readonly MAX_LENGTH = 50;
+  private static readonly PREFIX = 'SUP';
+  private static readonly MIN_DIGITS = 4;
+  private static readonly PATTERN = /^SUP-(\d+)$/;
 
   private constructor(private readonly value: string) {}
 
-  public static create(raw: string): SupplierCode {
-    const trimmed = raw?.trim();
-
-    if (!trimmed) {
-      throw new UnprocessableEntityException('Supplier code is required');
+  // Sinh code mới từ số thứ tự: 12 -> SUP-0012
+  public static fromNumber(sequence: number): SupplierCode {
+    if (!Number.isInteger(sequence) || sequence <= 0) {
+      throw new UnprocessableEntityException('Invalid supplier code sequence');
     }
 
-    if (trimmed.length > SupplierCode.MAX_LENGTH) {
-      throw new UnprocessableEntityException('Supplier code is too long');
+    const digits = String(sequence).padStart(SupplierCode.MIN_DIGITS, '0');
+
+    return new SupplierCode(`${SupplierCode.PREFIX}-${digits}`);
+  }
+
+  // Dựng lại từ chuỗi đã có (DB, input) và kiểm tra định dạng
+  public static create(raw: unknown): SupplierCode {
+    if (typeof raw !== 'string' || !SupplierCode.PATTERN.test(raw.trim())) {
+      throw new UnprocessableEntityException('Invalid supplier code format');
     }
 
-    return new SupplierCode(trimmed);
+    return new SupplierCode(raw.trim());
   }
 
   public getValue(): string {
     return this.value;
+  }
+
+  public equals(other: SupplierCode): boolean {
+    return this.value === other.value;
   }
 }

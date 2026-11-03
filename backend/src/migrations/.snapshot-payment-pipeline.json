@@ -366,7 +366,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": true,
+          "unique": false,
           "length": 255,
           "precision": null,
           "scale": null,
@@ -417,7 +417,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": true,
+          "unique": false,
           "length": 255,
           "precision": null,
           "scale": null,
@@ -468,7 +468,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": true,
-          "unique": true,
+          "unique": false,
           "length": 255,
           "precision": null,
           "scale": null,
@@ -536,41 +536,11 @@
       "indexes": [
         {
           "columnNames": [
-            "address"
-          ],
-          "composite": false,
-          "constraint": true,
-          "keyName": "suppliers_address_unique",
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
             "code"
           ],
           "composite": false,
           "constraint": true,
           "keyName": "suppliers_code_unique",
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
-            "email"
-          ],
-          "composite": false,
-          "constraint": true,
-          "keyName": "suppliers_email_unique",
-          "primary": false,
-          "unique": true
-        },
-        {
-          "columnNames": [
-            "phone"
-          ],
-          "composite": false,
-          "constraint": true,
-          "keyName": "suppliers_phone_unique",
           "primary": false,
           "unique": true
         },

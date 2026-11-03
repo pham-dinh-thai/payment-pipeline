@@ -35,15 +35,20 @@ export class MikroSupplier {
   })
   updatedAt = new Date();
 
-  @Property({ type: 'string', nullable: true, unique: true })
+  @Property({ type: 'string', nullable: true })
   phone!: string | null;
 
-  @Property({ type: 'string', nullable: true, unique: true })
+  @Property({ type: 'string', nullable: true })
   email!: string | null;
 
-  @Property({ type: 'string', nullable: true, unique: true })
+  @Property({ type: 'string', nullable: true })
   address!: string | null;
 
-  @Property({ type: 'string', nullable: true, unique: true })
+  @Property({
+    type: 'string',
+    fieldName: 'tax_code',
+    nullable: true,
+    unique: true,
+  })
   taxCode!: string | null;
 }

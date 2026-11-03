@@ -48,20 +48,40 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
 
   public async save(inventory: Inventory): Promise<Inventory> {
     try {
-      for (const batch of inventory.getNewBatches()) {
-        await this.entityManager.insert(
+      const news = inventory.getNewBatches();
+
+      if (news.length) {
+        await this.entityManager.insertMany(
           MikroBatch,
-          BatchMapper.toMikroOrm(batch),
+          news.map((batch) => BatchMapper.toMikroOrm(batch)),
         );
       }
 
-      for (const batch of inventory.getUpdatedBatches()) {
-        await this.entityManager.nativeUpdate(
-          MikroBatch,
-          { id: batch.getId() },
-          { quantity: batch.getQuantity(), updatedAt: batch.getUpdatedAt() },
+      const updates = [
+        ...new Map(
+          inventory.getUpdatedBatches().map((batch) => [batch.getId(), batch]),
+        ).values(),
+      ];
+
+      if (updates.length) {
+        await this.entityManager.getConnection().execute(
+          `update "batches"
+              set "quantity" = v.quantity,
+                  "updated_at" = v.updated_at
+             from unnest(?::uuid[], ?::int[], ?::timestamptz[])
+               as v(id, quantity, updated_at)
+            where "batches"."id" = v.id`,
+          [
+            updates.map((batch) => batch.getId()),
+            updates.map((batch) => batch.getQuantity()),
+            updates.map((batch) => batch.getUpdatedAt()),
+          ],
+          'run',
+          this.entityManager.getTransactionContext(),
         );
       }
+
+      return inventory;
     } catch (e) {
       if (e instanceof UniqueConstraintViolationException) {
         throw new ConflictException(
@@ -75,7 +95,5 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
 
       throw e;
     }
-
-    return inventory;
   }
 }

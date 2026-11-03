@@ -73,10 +73,6 @@ export class Batch {
     );
   }
 
-  /**
-   * Nhập kho: cộng thêm hàng vào đúng lô hiện có.
-   * Dùng khi nhà cung cấp giao bổ sung cho lô đã nhập trước đó.
-   */
   public receive(quantity: number): void {
     Quantity.assertPositive(quantity, 'Receive quantity');
 
@@ -85,9 +81,6 @@ export class Batch {
     this.updatedAt = new Date();
   }
 
-  /**
-   * Xuất kho: trừ hàng khỏi lô, không cho xuất quá số đang có.
-   */
   public issue(quantity: number): void {
     Quantity.assertPositive(quantity, 'Issue quantity');
 
@@ -96,10 +89,6 @@ export class Batch {
     this.updatedAt = new Date();
   }
 
-  /**
-   * Điều chỉnh khi kiểm kê: số đếm thực tế là nguồn đúng,
-   * nên ghi đè bằng số đếm chứ không cộng/trừ delta.
-   */
   public reconcile(countedQuantity: number): void {
     this.quantity = Quantity.create(countedQuantity);
 

@@ -1,21 +1,32 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateSupplierCommand } from '../../application/commands/create-supplier/create-supplier.command';
 import { UpdateSupplierCommand } from '../../application/commands/update-supplier/update-supplier.command';
 import { UpdateSupplierResponse } from '../../application/commands/update-supplier/update-supplier.response';
+import { GetSuppliersQuery } from '../../application/queries/get-suppliers/get-suppliers.query';
+import { SupplierListItemReadModel } from '../../application/queries/get-suppliers/supplier-list-item.read-model';
 import { CreateSupplierRequest } from './requests/create-supplier.request';
 import { UpdateSupplierRequest } from './requests/update-supplier.request';
 
 @Controller('suppliers')
 export class SuppliersController {
-  public constructor(private readonly commandBus: CommandBus) {}
+  public constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  public findAll(): Promise<SupplierListItemReadModel[]> {
+    return this.queryBus.execute(new GetSuppliersQuery());
+  }
 
   @Post()
   public create(

@@ -1,6 +1,8 @@
 import { Supplier } from './supplier.aggregate';
 
 export interface ISuppliersRepository {
+  findAll(): Promise<Supplier[]>;
+
   findById(id: string): Promise<Supplier | null>;
 
   nextSequence(): Promise<number>;

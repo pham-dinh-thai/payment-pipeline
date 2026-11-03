@@ -6,6 +6,7 @@ import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
 import { CreateSupplierCommand } from './create-supplier.command';
 import { CreateSupplierHandler } from './create-supplier.handler';
 
+type FindAll = () => Promise<Supplier[]>;
 type FindById = (id: string) => Promise<Supplier | null>;
 type NextSequence = () => Promise<number>;
 type Create = (supplier: Supplier) => Promise<Supplier>;
@@ -28,6 +29,7 @@ const setup = (sequence = 7) => {
   const run = jest.fn<Run>((work) => work());
 
   const repository: ISuppliersRepository = {
+    findAll: jest.fn<FindAll>(),
     findById,
     nextSequence,
     create,

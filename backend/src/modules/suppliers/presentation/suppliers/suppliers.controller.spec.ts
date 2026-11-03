@@ -1,9 +1,12 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateSupplierCommand } from '../../application/commands/create-supplier/create-supplier.command';
 import { UpdateSupplierCommand } from '../../application/commands/update-supplier/update-supplier.command';
 import { UpdateSupplierResponse } from '../../application/commands/update-supplier/update-supplier.response';
+import { GetSuppliersQuery } from '../../application/queries/get-suppliers/get-suppliers.query';
+import { SupplierListItemReadModel } from '../../application/queries/get-suppliers/supplier-list-item.read-model';
+import { SupplierStatus } from '../../domain/enums/supplier-status.enum';
 import { SuppliersController } from './suppliers.controller';
 
 const SUPPLIER_ID = 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c';
@@ -15,14 +18,21 @@ type Execute = (
 describe('SuppliersController', () => {
   let controller: SuppliersController;
   const execute = jest.fn<Execute>();
+  const queryExecute =
+    jest.fn<(query: GetSuppliersQuery) => Promise<unknown>>();
 
   beforeEach(async () => {
     execute.mockReset();
     execute.mockImplementation(() => Promise.resolve({ id: SUPPLIER_ID }));
+    queryExecute.mockReset();
+    queryExecute.mockImplementation(() => Promise.resolve([]));
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [SuppliersController],
-      providers: [{ provide: CommandBus, useValue: { execute } }],
+      providers: [
+        { provide: CommandBus, useValue: { execute } },
+        { provide: QueryBus, useValue: { execute: queryExecute } },
+      ],
     }).compile();
 
     controller = module.get<SuppliersController>(SuppliersController);
@@ -110,5 +120,29 @@ describe('SuppliersController', () => {
     expect(command.email).toBeNull();
     expect(command.address).toBeNull();
     expect(command.taxCode).toBeNull();
+  });
+
+  it('dispatches GetSuppliersQuery and returns the list', async () => {
+    const items = [
+      new SupplierListItemReadModel(
+        SUPPLIER_ID,
+        'SUP-0001',
+        'Công ty TNHH ABC',
+        SupplierStatus.ACTIVE,
+        '0901234567',
+        'contact@abc.vn',
+        '12 Nguyễn Huệ',
+        '0312345678',
+        new Date('2026-01-01T00:00:00Z'),
+        new Date('2026-01-01T00:00:00Z'),
+      ),
+    ];
+    queryExecute.mockImplementation(() => Promise.resolve(items));
+
+    const result = await controller.findAll();
+
+    expect(result).toBe(items);
+    expect(queryExecute).toHaveBeenCalledTimes(1);
+    expect(queryExecute.mock.calls[0][0]).toBeInstanceOf(GetSuppliersQuery);
   });
 });

@@ -6,6 +6,7 @@ import { SUPPLIERS_REPOSITORY } from './domain/suppliers.repository';
 import { MikroSuppliersRepository } from './infrastructure/repositories/mikro-suppliers.repository';
 import { CreateSupplierHandler } from './application/commands/create-supplier/create-supplier.handler';
 import { UpdateSupplierHandler } from './application/commands/update-supplier/update-supplier.handler';
+import { GetSuppliersHandler } from './application/queries/get-suppliers/get-suppliers.handler';
 import { UNIT_OF_WORK } from '../../shared/application/unit-of-work';
 import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-unit-of-work';
 
@@ -17,6 +18,7 @@ import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-u
     { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
     CreateSupplierHandler,
     UpdateSupplierHandler,
+    GetSuppliersHandler,
   ],
 })
 export class SuppliersModule {}

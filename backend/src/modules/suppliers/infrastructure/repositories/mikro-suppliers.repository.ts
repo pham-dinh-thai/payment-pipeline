@@ -12,6 +12,16 @@ import { MikroSupplier } from '../entities/mikro-supplier.entity';
 export class MikroSuppliersRepository implements ISuppliersRepository {
   public constructor(private readonly entityManager: EntityManager) {}
 
+  public async findAll(): Promise<Supplier[]> {
+    const mikroSuppliers = await this.entityManager.findAll(MikroSupplier, {
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return mikroSuppliers.map((mikroSupplier) =>
+      SupplierMapper.toDomain(mikroSupplier),
+    );
+  }
+
   public async findById(id: string): Promise<Supplier | null> {
     const mikroSupplier = await this.entityManager.findOne(MikroSupplier, {
       id,

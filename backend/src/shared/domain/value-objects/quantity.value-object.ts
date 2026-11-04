@@ -5,7 +5,7 @@ export class Quantity {
 
   public static create(value: number): Quantity {
     if (!Number.isInteger(value)) {
-      throw new UnprocessableEntityException('Quantity must be a Integer');
+      throw new UnprocessableEntityException('Quantity must be an integer');
     }
 
     if (value < 0) {
@@ -13,6 +13,22 @@ export class Quantity {
     }
 
     return new Quantity(value);
+  }
+
+  public add(quantity: number): Quantity {
+    return Quantity.create(this.value + quantity);
+  }
+
+  public subtract(quantity: number): Quantity {
+    return Quantity.create(this.value - quantity);
+  }
+
+  public isZero(): boolean {
+    return this.value === 0;
+  }
+
+  public equals(other: Quantity): boolean {
+    return this.value === other.value;
   }
 
   public getValue(): number {

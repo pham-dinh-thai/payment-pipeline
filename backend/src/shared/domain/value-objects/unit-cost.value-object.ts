@@ -1,6 +1,10 @@
 import { UnprocessableEntityException } from '@nestjs/common';
 import Decimal from 'decimal.js';
 
+/**
+ * Per-unit price, stored as decimal with 2 decimal places.
+ * Pure value semantics: usable by any aggregate that deals with prices.
+ */
 export class UnitCost {
   private static readonly PRECISION = 12;
   private static readonly SCALE = 2;

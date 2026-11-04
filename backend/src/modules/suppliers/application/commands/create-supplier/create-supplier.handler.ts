@@ -33,7 +33,7 @@ export class CreateSupplierHandler implements ICommandHandler<CreateSupplierComm
         taxCode: command.taxCode,
       });
 
-      await this.suppliersRepository.save(supplier);
+      await this.suppliersRepository.create(supplier);
 
       return { id: supplier.getId() };
     });

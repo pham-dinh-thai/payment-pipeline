@@ -7,7 +7,7 @@ export class SupplierCode {
 
   private constructor(private readonly value: string) {}
 
-  // Sinh code mới từ số thứ tự: 12 -> SUP-0012
+  // Generate code from sequence (sequence = 12 -> SUP-0012)
   public static fromNumber(sequence: number): SupplierCode {
     if (!Number.isInteger(sequence) || sequence <= 0) {
       throw new UnprocessableEntityException('Invalid supplier code sequence');
@@ -18,7 +18,7 @@ export class SupplierCode {
     return new SupplierCode(`${SupplierCode.PREFIX}-${digits}`);
   }
 
-  // Dựng lại từ chuỗi đã có (DB, input) và kiểm tra định dạng
+  // Create from DB
   public static create(raw: unknown): SupplierCode {
     if (typeof raw !== 'string' || !SupplierCode.PATTERN.test(raw.trim())) {
       throw new UnprocessableEntityException('Invalid supplier code format');

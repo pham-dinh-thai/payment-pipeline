@@ -1,17 +1,17 @@
 import { describe, expect, it } from '@jest/globals';
 import { UnprocessableEntityException } from '@nestjs/common';
-import { Quantity } from './quantity.value-object';
+import { StockQuantity } from './stock-quantity.value-object';
 
-describe('Quantity', () => {
+describe('StockQuantity', () => {
   describe('create', () => {
     it.each([0, 1, 10, 999])('accepts %s', (value) => {
-      expect(Quantity.create(value).getValue()).toBe(value);
+      expect(StockQuantity.create(value).getValue()).toBe(value);
     });
 
     it.each([-1, -100, 1.5, NaN, Infinity, -Infinity])(
       'rejects %s',
       (value) => {
-        expect(() => Quantity.create(value)).toThrow(
+        expect(() => StockQuantity.create(value)).toThrow(
           UnprocessableEntityException,
         );
       },
@@ -21,18 +21,18 @@ describe('Quantity', () => {
   describe('assertPositive', () => {
     it.each([1, 10, 999])('accepts %s', (value) => {
       expect(() =>
-        Quantity.assertPositive(value, 'Receive quantity'),
+        StockQuantity.assertPositive(value, 'Receive quantity'),
       ).not.toThrow();
     });
 
     it.each([0, -1, 1.5, NaN, Infinity])('rejects %s', (value) => {
-      expect(() => Quantity.assertPositive(value, 'Receive quantity')).toThrow(
-        UnprocessableEntityException,
-      );
+      expect(() =>
+        StockQuantity.assertPositive(value, 'Receive quantity'),
+      ).toThrow(UnprocessableEntityException);
     });
 
     it('uses the label in the error message', () => {
-      expect(() => Quantity.assertPositive(0, 'Issue quantity')).toThrow(
+      expect(() => StockQuantity.assertPositive(0, 'Issue quantity')).toThrow(
         'Issue quantity must be a positive integer',
       );
     });
@@ -40,11 +40,11 @@ describe('Quantity', () => {
 
   describe('increase', () => {
     it('adds the quantity', () => {
-      expect(Quantity.create(10).increase(5).getValue()).toBe(15);
+      expect(StockQuantity.create(10).increase(5).getValue()).toBe(15);
     });
 
     it('does not mutate the original value', () => {
-      const quantity = Quantity.create(10);
+      const quantity = StockQuantity.create(10);
 
       quantity.increase(5);
 
@@ -54,15 +54,15 @@ describe('Quantity', () => {
 
   describe('decrease', () => {
     it('subtracts the quantity', () => {
-      expect(Quantity.create(10).decrease(4).getValue()).toBe(6);
+      expect(StockQuantity.create(10).decrease(4).getValue()).toBe(6);
     });
 
     it('allows decreasing to zero', () => {
-      expect(Quantity.create(10).decrease(10).getValue()).toBe(0);
+      expect(StockQuantity.create(10).decrease(10).getValue()).toBe(0);
     });
 
     it('rejects when requested quantity is greater than available', () => {
-      const quantity = Quantity.create(10);
+      const quantity = StockQuantity.create(10);
 
       expect(() => quantity.decrease(11)).toThrow(UnprocessableEntityException);
       expect(() => quantity.decrease(11)).toThrow(

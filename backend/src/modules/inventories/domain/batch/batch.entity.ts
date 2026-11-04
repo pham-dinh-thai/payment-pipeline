@@ -1,8 +1,8 @@
 import { Id } from '../../../../shared/domain/value-objects/id.value-object';
 import { BatchStatus } from './batch-status.enum';
 import { LotNumber } from './value-objects/lot-number.value-object';
-import { Quantity } from './value-objects/quantity.value-object';
-import { UnitCost } from './value-objects/unit-cost.object-value';
+import { StockQuantity } from './value-objects/stock-quantity.value-object';
+import { UnitCost } from '../../../../shared/domain/value-objects/unit-cost.value-object';
 
 export type CreateBatchProps = {
   lotNumber: string;
@@ -32,7 +32,7 @@ export class Batch {
     private readonly id: Id,
     private readonly lotNumber: LotNumber,
     private readonly productId: string,
-    private quantity: Quantity,
+    private quantity: StockQuantity,
     private readonly unitCost: UnitCost,
     private status: BatchStatus,
     private expiresAt: Date,
@@ -48,7 +48,7 @@ export class Batch {
       Id.generate(),
       LotNumber.create(props.lotNumber),
       props.productId,
-      Quantity.create(props.quantity),
+      StockQuantity.create(props.quantity),
       UnitCost.create(props.unitCost),
       props.status,
       props.expiresAt,
@@ -63,7 +63,7 @@ export class Batch {
       Id.create(props.id),
       LotNumber.create(props.lotNumber),
       props.productId,
-      Quantity.create(props.quantity),
+      StockQuantity.create(props.quantity),
       UnitCost.create(props.unitCost),
       props.status,
       props.expiresAt,
@@ -74,7 +74,7 @@ export class Batch {
   }
 
   public receive(quantity: number): void {
-    Quantity.assertPositive(quantity, 'Receive quantity');
+    StockQuantity.assertPositive(quantity, 'Receive quantity');
 
     this.quantity = this.quantity.increase(quantity);
 
@@ -82,7 +82,7 @@ export class Batch {
   }
 
   public issue(quantity: number): void {
-    Quantity.assertPositive(quantity, 'Issue quantity');
+    StockQuantity.assertPositive(quantity, 'Issue quantity');
 
     this.quantity = this.quantity.decrease(quantity);
 
@@ -90,7 +90,7 @@ export class Batch {
   }
 
   public reconcile(countedQuantity: number): void {
-    this.quantity = Quantity.create(countedQuantity);
+    this.quantity = StockQuantity.create(countedQuantity);
 
     this.updatedAt = new Date();
   }

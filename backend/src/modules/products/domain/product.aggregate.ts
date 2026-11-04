@@ -1,5 +1,5 @@
 import { Id } from '../../../shared/domain/value-objects/id.value-object';
-import { Quantity } from './value-objects/quantity.value-object';
+import { Quantity } from '../../../shared/domain/value-objects/quantity.value-object';
 import { UnitPrice } from './value-objects/unit-price.object-value';
 
 export type CreateProductProps = {

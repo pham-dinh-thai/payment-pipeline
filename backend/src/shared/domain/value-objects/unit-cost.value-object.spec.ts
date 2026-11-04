@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import { UnprocessableEntityException } from '@nestjs/common';
-import { UnitCost } from './unit-cost.object-value';
+import { UnitCost } from './unit-cost.value-object';
 
 describe('UnitCost', () => {
   describe('create', () => {

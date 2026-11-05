@@ -8,8 +8,8 @@ import {
 } from '../../../domain/inventories.repository';
 import { Inventory } from '../../../domain/inventory.aggregate';
 import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
-import { AddBatchCommand } from './add-batch.command';
-import { AddBatchHandler } from './add-batch.handler';
+import { ReceiveStockCommand } from './receive-stock.command';
+import { ReceiveStockHandler } from './receive-stock.handler';
 
 const PRODUCT_ID = 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c';
 const CREATED_BY = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
@@ -24,8 +24,11 @@ type Save = (inventory: Inventory) => Promise<Inventory>;
 
 type Run = (work: () => Promise<unknown>) => Promise<unknown>;
 
-const createCommand = (lotNumber = 'LOT-001', quantity = 10): AddBatchCommand =>
-  new AddBatchCommand(
+const createCommand = (
+  lotNumber = 'LOT-001',
+  quantity = 10,
+): ReceiveStockCommand =>
+  new ReceiveStockCommand(
     lotNumber,
     PRODUCT_ID,
     quantity,
@@ -59,12 +62,12 @@ const setup = (inventory: Inventory | null) => {
   const unitOfWork: IUnitOfWork = {
     run: run as unknown as IUnitOfWork['run'],
   };
-  const handler = new AddBatchHandler(repository, unitOfWork);
+  const handler = new ReceiveStockHandler(repository, unitOfWork);
 
   return { handler, findByProductId, save, run };
 };
 
-describe('AddBatchHandler', () => {
+describe('ReceiveStockHandler', () => {
   it('creates an inventory when none exists and saves the new batch', async () => {
     const { handler, findByProductId, save, run } = setup(null);
 
@@ -94,7 +97,7 @@ describe('AddBatchHandler', () => {
     expect(newBatch.getCreatedBy()).toBe(CREATED_BY);
   });
 
-  it('adds a batch to an existing inventory', async () => {
+  it('adds a new batch to an existing inventory', async () => {
     const inventory = createInventory();
     const { handler, save } = setup(inventory);
 

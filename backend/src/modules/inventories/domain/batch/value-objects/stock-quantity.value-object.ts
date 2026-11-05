@@ -16,10 +16,6 @@ export class StockQuantity {
     }
   }
 
-  public increase(quantity: number): StockQuantity {
-    return new StockQuantity(this.quantity.add(quantity));
-  }
-
   public decrease(quantity: number): StockQuantity {
     if (quantity > this.quantity.getValue()) {
       throw new UnprocessableEntityException(

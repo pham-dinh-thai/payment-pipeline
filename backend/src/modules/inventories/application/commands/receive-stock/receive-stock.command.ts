@@ -1,6 +1,6 @@
 import { Command } from '@nestjs/cqrs';
 
-export class AddBatchCommand extends Command<{ batchId: string }> {
+export class ReceiveStockCommand extends Command<{ batchId: string }> {
   public constructor(
     public readonly lotNumber: string,
     public readonly productId: string,

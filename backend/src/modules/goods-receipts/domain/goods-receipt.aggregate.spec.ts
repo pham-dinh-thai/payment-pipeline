@@ -36,7 +36,7 @@ const createReceipt = (
   goodsReceiptLines: GoodsReceiptLine[] = [createLine()],
 ): GoodsReceipt =>
   GoodsReceipt.create({
-    code: 'GR-0001',
+    sequence: 1,
     supplierId: SUPPLIER_ID,
     goodsReceiptLines,
     createdBy: CREATED_BY,

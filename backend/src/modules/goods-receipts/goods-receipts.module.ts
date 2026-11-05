@@ -5,6 +5,9 @@ import { GOODS_RECEIPTS_REPOSITORY } from './domain/goods-receipts.repository';
 import { MikroGoodsReceipt } from './infrastructure/entities/mikro-goods-receipt.entity';
 import { MikroGoodsReceiptLine } from './infrastructure/entities/mikro-goods-receipt-line.entity';
 import { MikroGoodsReceiptsRepository } from './infrastructure/repositories/mikro-goods-receipts.repository';
+import { CreateGoodsReceiptHandler } from './application/commands/create-goods-receipt/create-goods-receipt.handler';
+import { ConfirmGoodsReceiptHandler } from './application/commands/confirm-goods-receipt/confirm-goods-receipt.handler';
+import { CancelGoodsReceiptHandler } from './application/commands/cancel-goods-receipt/cancel-goods-receipt.handler';
 import { UNIT_OF_WORK } from '../../shared/application/unit-of-work';
 import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-unit-of-work';
 
@@ -19,7 +22,9 @@ import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-u
       useClass: MikroGoodsReceiptsRepository,
     },
     { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
+    CreateGoodsReceiptHandler,
+    ConfirmGoodsReceiptHandler,
+    CancelGoodsReceiptHandler,
   ],
-  exports: [GOODS_RECEIPTS_REPOSITORY],
 })
 export class GoodsReceiptsModule {}

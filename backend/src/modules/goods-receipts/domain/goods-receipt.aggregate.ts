@@ -6,9 +6,10 @@ import {
 import { Id } from '../../../shared/domain/value-objects/id.value-object';
 import { GoodsReceiptStatus } from './goods-receipt-status.enum';
 import { GoodsReceiptLine } from './goods-receipt-line.entity';
+import { GoodsReceiptCode } from './value-objects/goods-receipt-code.value-object';
 
 export type CreateGoodsReceiptProps = {
-  code: string;
+  sequence: number;
   supplierId: string;
   goodsReceiptLines: GoodsReceiptLine[];
   createdBy: string;
@@ -32,7 +33,7 @@ export type FromPersistentGoodsReceiptProps = {
 export class GoodsReceipt {
   private constructor(
     private readonly id: Id,
-    private readonly code: string,
+    private readonly code: GoodsReceiptCode,
     private readonly supplierId: string,
     private readonly goodsReceiptLines: GoodsReceiptLine[],
     private status: GoodsReceiptStatus,
@@ -53,7 +54,7 @@ export class GoodsReceipt {
 
     return new GoodsReceipt(
       Id.generate(),
-      props.code,
+      GoodsReceiptCode.fromNumber(props.sequence),
       props.supplierId,
       [...props.goodsReceiptLines],
       GoodsReceiptStatus.PENDING,
@@ -72,7 +73,7 @@ export class GoodsReceipt {
   ): GoodsReceipt {
     return new GoodsReceipt(
       Id.create(props.id),
-      props.code,
+      GoodsReceiptCode.create(props.code),
       props.supplierId,
       [...props.goodsReceiptLines],
       props.status,
@@ -134,7 +135,7 @@ export class GoodsReceipt {
   }
 
   public getCode(): string {
-    return this.code;
+    return this.code.getValue();
   }
 
   public getSupplierId(): string {

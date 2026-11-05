@@ -1,5 +1,5 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { AddBatchCommand } from './add-batch.command';
+import { ReceiveStockCommand } from './receive-stock.command';
 import {
   type IInventoriesRepository,
   INVENTORIES_REPOSITORY,
@@ -12,8 +12,8 @@ import {
   UNIT_OF_WORK,
 } from '../../../../../shared/application/unit-of-work';
 
-@CommandHandler(AddBatchCommand)
-export class AddBatchHandler implements ICommandHandler<AddBatchCommand> {
+@CommandHandler(ReceiveStockCommand)
+export class ReceiveStockHandler implements ICommandHandler<ReceiveStockCommand> {
   public constructor(
     @Inject(INVENTORIES_REPOSITORY)
     private readonly inventoriesRepository: IInventoriesRepository,
@@ -22,7 +22,9 @@ export class AddBatchHandler implements ICommandHandler<AddBatchCommand> {
     private readonly unitOfWork: IUnitOfWork,
   ) {}
 
-  public async execute(command: AddBatchCommand): Promise<{ batchId: string }> {
+  public async execute(
+    command: ReceiveStockCommand,
+  ): Promise<{ batchId: string }> {
     return this.unitOfWork.run(async () => {
       let inventory = await this.inventoriesRepository.findByProductId(
         command.productId,

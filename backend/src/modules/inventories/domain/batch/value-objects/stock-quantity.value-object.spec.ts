@@ -21,13 +21,13 @@ describe('StockQuantity', () => {
   describe('assertPositive', () => {
     it.each([1, 10, 999])('accepts %s', (value) => {
       expect(() =>
-        StockQuantity.assertPositive(value, 'Receive quantity'),
+        StockQuantity.assertPositive(value, 'Issue quantity'),
       ).not.toThrow();
     });
 
     it.each([0, -1, 1.5, NaN, Infinity])('rejects %s', (value) => {
       expect(() =>
-        StockQuantity.assertPositive(value, 'Receive quantity'),
+        StockQuantity.assertPositive(value, 'Issue quantity'),
       ).toThrow(UnprocessableEntityException);
     });
 
@@ -35,20 +35,6 @@ describe('StockQuantity', () => {
       expect(() => StockQuantity.assertPositive(0, 'Issue quantity')).toThrow(
         'Issue quantity must be a positive integer',
       );
-    });
-  });
-
-  describe('increase', () => {
-    it('adds the quantity', () => {
-      expect(StockQuantity.create(10).increase(5).getValue()).toBe(15);
-    });
-
-    it('does not mutate the original value', () => {
-      const quantity = StockQuantity.create(10);
-
-      quantity.increase(5);
-
-      expect(quantity.getValue()).toBe(10);
     });
   });
 

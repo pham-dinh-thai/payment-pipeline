@@ -74,39 +74,6 @@ describe('Batch', () => {
     });
   });
 
-  describe('receive', () => {
-    it('adds stock and updates updatedAt', () => {
-      jest.useFakeTimers();
-      jest.setSystemTime(new Date('2026-01-01T00:00:00.000Z'));
-
-      const batch = createBatch({ quantity: 10 });
-      const createdAt = batch.getCreatedAt();
-
-      jest.setSystemTime(new Date('2026-01-01T00:00:01.000Z'));
-      batch.receive(5);
-
-      expect(batch.getQuantity()).toBe(15);
-      expect(batch.getUpdatedAt().getTime()).toBeGreaterThan(
-        createdAt.getTime(),
-      );
-      expect(batch.getCreatedAt()).toEqual(createdAt);
-    });
-
-    it.each([0, -1, 1.5, NaN, Infinity])(
-      'rejects invalid quantity %s',
-      (quantity) => {
-        const batch = createBatch({ quantity: 10 });
-        const updatedAt = batch.getUpdatedAt();
-
-        expect(() => batch.receive(quantity)).toThrow(
-          UnprocessableEntityException,
-        );
-        expect(batch.getQuantity()).toBe(10);
-        expect(batch.getUpdatedAt()).toEqual(updatedAt);
-      },
-    );
-  });
-
   describe('issue', () => {
     it('subtracts stock and updates updatedAt', () => {
       jest.useFakeTimers();

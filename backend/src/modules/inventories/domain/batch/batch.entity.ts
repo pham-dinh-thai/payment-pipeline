@@ -73,14 +73,6 @@ export class Batch {
     );
   }
 
-  public receive(quantity: number): void {
-    StockQuantity.assertPositive(quantity, 'Receive quantity');
-
-    this.quantity = this.quantity.increase(quantity);
-
-    this.updatedAt = new Date();
-  }
-
   public issue(quantity: number): void {
     StockQuantity.assertPositive(quantity, 'Issue quantity');
 

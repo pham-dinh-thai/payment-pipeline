@@ -46,16 +46,6 @@ export class Inventory {
     return { batchId: batch.getId() };
   }
 
-  public receiveStock(batchId: string, quantity: number): number {
-    const batch = this.findBatchById(batchId);
-
-    batch.receive(quantity);
-
-    this.updatedBatches.push(batch);
-
-    return batch.getQuantity();
-  }
-
   public issueStock(batchId: string, quantity: number): number {
     const batch = this.findBatchById(batchId);
 

@@ -95,50 +95,6 @@ describe('Inventory', () => {
     });
   });
 
-  describe('receiveStock', () => {
-    it('adds stock to the target batch and returns the new quantity', () => {
-      const batch = createBatch('LOT-001', 10);
-      const inventory = Inventory.fromPersistent(PRODUCT_ID, [batch]);
-
-      const quantity = inventory.receiveStock(batch.getId(), 5);
-
-      expect(quantity).toBe(15);
-      expect(batch.getQuantity()).toBe(15);
-      expect(inventory.getUpdatedBatches()).toEqual([batch]);
-    });
-
-    it('does not affect other batches', () => {
-      const target = createBatch('LOT-001', 10);
-      const other = createBatch('LOT-002', 7);
-      const inventory = Inventory.fromPersistent(PRODUCT_ID, [target, other]);
-
-      inventory.receiveStock(target.getId(), 5);
-
-      expect(target.getQuantity()).toBe(15);
-      expect(other.getQuantity()).toBe(7);
-      expect(inventory.getUpdatedBatches()).toEqual([target]);
-    });
-
-    it('throws when batch does not exist', () => {
-      const inventory = Inventory.create(PRODUCT_ID);
-
-      expect(() => inventory.receiveStock(UNKNOWN_BATCH_ID, 1)).toThrow(
-        NotFoundException,
-      );
-      expect(inventory.getUpdatedBatches()).toEqual([]);
-    });
-
-    it('rejects a non-positive quantity', () => {
-      const batch = createBatch('LOT-001', 10);
-      const inventory = Inventory.fromPersistent(PRODUCT_ID, [batch]);
-
-      expect(() => inventory.receiveStock(batch.getId(), 0)).toThrow(
-        UnprocessableEntityException,
-      );
-      expect(batch.getQuantity()).toBe(10);
-    });
-  });
-
   describe('issueStock', () => {
     it('subtracts stock from the target batch and returns the new quantity', () => {
       const batch = createBatch('LOT-001', 10);

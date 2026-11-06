@@ -10,6 +10,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { InventoriesModule } from './modules/inventories/inventories.module';
 import { GoodsReceiptsModule } from './modules/goods-receipts/goods-receipts.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SuppliersModule } from './modules/suppliers/suppliers.module';
     InventoriesModule,
     GoodsReceiptsModule,
     SuppliersModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

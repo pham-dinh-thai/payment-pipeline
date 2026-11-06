@@ -409,6 +409,18 @@
       "indexes": [
         {
           "columnNames": [
+            "goods_receipt_id",
+            "product_id",
+            "lot_number"
+          ],
+          "composite": true,
+          "constraint": true,
+          "keyName": "goods_receipt_lines_goods_receipt_id_product_id_l_b1421_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
             "id"
           ],
           "composite": false,
@@ -416,62 +428,11 @@
           "keyName": "goods_receipt_lines_pkey",
           "primary": true,
           "unique": true
-        },
-        {
-          "columnNames": [
-            "goods_receipt_id",
-            "product_id",
-            "lot_number"
-          ],
-          "composite": true,
-          "constraint": true,
-          "keyName": "goods_receipt_lines_receipt_product_lot_unique",
-          "primary": false,
-          "unique": true
         }
       ],
-      "checks": [
-        {
-          "name": "goods_receipt_lines_quantity_check",
-          "expression": "quantity > 0",
-          "definition": "CHECK ((quantity > 0))",
-          "columnName": "quantity"
-        },
-        {
-          "name": "goods_receipt_lines_unit_cost_check",
-          "expression": "unit_cost >= 0",
-          "definition": "CHECK ((unit_cost >= (0)::numeric))",
-          "columnName": "unit_cost"
-        }
-      ],
+      "checks": [],
       "triggers": [],
       "foreignKeys": {
-        "goods_receipt_lines_batch_id_foreign": {
-          "columnNames": [
-            "batch_id"
-          ],
-          "constraintName": "goods_receipt_lines_batch_id_foreign",
-          "localTableName": "public.goods_receipt_lines",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "public.batches",
-          "updateRule": "cascade",
-          "deleteRule": "set null"
-        },
-        "goods_receipt_lines_goods_receipt_id_foreign": {
-          "columnNames": [
-            "goods_receipt_id"
-          ],
-          "constraintName": "goods_receipt_lines_goods_receipt_id_foreign",
-          "localTableName": "public.goods_receipt_lines",
-          "referencedColumnNames": [
-            "id"
-          ],
-          "referencedTableName": "public.goods_receipts",
-          "updateRule": "cascade",
-          "deleteRule": "cascade"
-        },
         "goods_receipt_lines_product_id_foreign": {
           "columnNames": [
             "product_id"
@@ -1075,13 +1036,147 @@
       "triggers": [],
       "foreignKeys": {},
       "comment": null
+    },
+    {
+      "name": "users",
+      "schema": "public",
+      "columns": {
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": true,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "first_name": {
+          "name": "first_name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "email"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "users_email_unique",
+          "primary": false,
+          "unique": true
+        },
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "users_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [],
+      "triggers": [],
+      "foreignKeys": {},
+      "comment": null
     }
   ],
   "views": [
     {
       "name": "inventories",
       "schema": "public",
-      "definition": "SELECT product_id,\n    (sum(quantity))::integer AS total_quantity,\n    (count(*))::integer AS batch_count,\n    min(expires_at) FILTER (WHERE (quantity > 0)) AS nearest_expiry,\n    sum(((quantity)::numeric * unit_cost)) AS stock_value,\n    max(updated_at) AS updated_at\n   FROM batches b\n  GROUP BY product_id"
+      "definition": "select\n      b.product_id,\n      sum(b.quantity)::int as total_quantity,\n      count(*)::int as batch_count,\n      min(b.expires_at) filter (where b.quantity > 0) as nearest_expiry,\n      sum(b.quantity * b.unit_cost) as stock_value,\n      max(b.updated_at) as updated_at\n    from batches b\n    group by b.product_id"
     }
   ],
   "nativeEnums": {}

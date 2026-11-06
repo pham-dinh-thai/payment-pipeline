@@ -8,6 +8,8 @@ import { MikroSupplier } from './src/modules/suppliers/infrastructure/entities/m
 import { MikroGoodsReceipt } from './src/modules/goods-receipts/infrastructure/entities/mikro-goods-receipt.entity';
 import { MikroGoodsReceiptLine } from './src/modules/goods-receipts/infrastructure/entities/mikro-goods-receipt-line.entity';
 import { MikroUser } from './src/modules/users/infrastructure/entities/mikro-user.entity';
+import { MikroAccount } from './src/modules/authentication/infrastructure/entities/mikro-account.entity';
+import { MikroCustomer } from './src/modules/customers/infrastructure/entities/mikro-customer.entity';
 
 dotenv.config({ path: path.resolve('../.env') });
 
@@ -26,6 +28,8 @@ export default defineConfig({
     MikroGoodsReceipt,
     MikroGoodsReceiptLine,
     MikroUser,
+    MikroAccount,
+    MikroCustomer,
   ],
   entitiesTs: [
     MikroProduct,
@@ -35,6 +39,8 @@ export default defineConfig({
     MikroGoodsReceipt,
     MikroGoodsReceiptLine,
     MikroUser,
+    MikroAccount,
+    MikroCustomer,
   ],
 
   debug: process.env.NODE_ENV !== 'production',

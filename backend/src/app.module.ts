@@ -11,6 +11,8 @@ import { InventoriesModule } from './modules/inventories/inventories.module';
 import { GoodsReceiptsModule } from './modules/goods-receipts/goods-receipts.module';
 import { SuppliersModule } from './modules/suppliers/suppliers.module';
 import { UsersModule } from './modules/users/users.module';
+import { AuthenticationModule } from './modules/authentication/authentication.module';
+import { CustomersModule } from './modules/customers/customers.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { UsersModule } from './modules/users/users.module';
     GoodsReceiptsModule,
     SuppliersModule,
     UsersModule,
+    AuthenticationModule,
+    CustomersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

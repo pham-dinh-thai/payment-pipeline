@@ -1,4 +1,5 @@
 import { Id } from '../../../shared/domain/value-objects/id.value-object';
+import { Password } from './password.value-object';
 
 export type CreateAccountProps = {
   userId: string;
@@ -9,19 +10,19 @@ export class Account {
   private constructor(
     private readonly id: Id,
     private readonly userId: string,
-    private password: string,
+    private password: Password,
     private isActive: boolean,
     private readonly createdAt: Date,
     private updatedAt: Date,
   ) {}
 
-  public static create(props: CreateAccountProps): Account {
+  public static async create(props: CreateAccountProps): Promise<Account> {
     const now = new Date();
 
     return new Account(
       Id.generate(),
       props.userId,
-      props.password,
+      await Password.fromPlainText(props.password),
       true,
       now,
       now,
@@ -37,7 +38,7 @@ export class Account {
   }
 
   public getPassword(): string {
-    return this.password;
+    return this.password.getValue();
   }
 
   public getIsActive(): boolean {

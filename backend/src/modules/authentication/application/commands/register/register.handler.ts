@@ -37,7 +37,7 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
 
       await this.commandBus.execute(new CreateCustomerCommand(user.id));
 
-      const account = Account.create({
+      const account = await Account.create({
         userId: user.id,
         password: command.password,
       });

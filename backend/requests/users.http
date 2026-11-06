@@ -1,0 +1,18 @@
+@BASE_URL="http://localhost:3000/users"
+
+### Create
+curl -X POST "{{BASE_URL}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Thai",
+    "lastName": "Thai",
+    "email": "test@example.com"
+  }'
+
+
+### Change email
+curl -X PATCH "{{BASE_URL}}/69847b83-f448-40d4-9942-3d3dfa0d6acb/email" \
+  -H "Content-Type: application/json" \
+  -d '{ 
+    "email": "test123456@example.com" 
+    }'

@@ -8,12 +8,18 @@ import { MikroAccountsRepository } from './infrastructure/repositories/mikro-acc
 import { LoginHandler } from './application/commands/login/login.handler';
 import { RegisterHandler } from './application/commands/register/register.handler';
 import { AuthenticationController } from './presentation/authentication/authentication.controller';
+import { CREATE_USER_PORT } from './application/commands/register/ports/create-user.port';
+import { CreateUserAdapter } from './infrastructure/adapters/create-user.adapter';
+import { CREATE_CUSTOMER_PORT } from './application/commands/register/ports/create-customer.port';
+import { CreateCustomerAdapter } from './infrastructure/adapters/create-customer.adapter';
 
 @Module({
   imports: [MikroOrmModule.forFeature([MikroAccount])],
   providers: [
     { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
     { provide: ACCOUNTS_REPOSITORY, useClass: MikroAccountsRepository },
+    { provide: CREATE_USER_PORT, useClass: CreateUserAdapter },
+    { provide: CREATE_CUSTOMER_PORT, useClass: CreateCustomerAdapter },
     LoginHandler,
     RegisterHandler,
   ],

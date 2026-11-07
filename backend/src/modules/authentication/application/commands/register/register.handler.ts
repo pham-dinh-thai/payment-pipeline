@@ -1,6 +1,5 @@
 import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { RegisterCommand } from './register.command';
-import { CreateUserCommand } from '../../../../users/application/commands/create-user/create-user.command';
 import { CreateCustomerCommand } from '../../../../customers/application/commands/create-customer/create-customer.command';
 import { Account } from '../../../domain/account.aggregate';
 import { Inject } from '@nestjs/common';
@@ -12,14 +11,26 @@ import {
   ACCOUNTS_REPOSITORY,
   type IAccountsRepository,
 } from '../../../domain/accounts.repository';
+import {
+  CREATE_USER_PORT,
+  type ICreateUserPort,
+} from './ports/create-user.port';
+import {
+  CREATE_CUSTOMER_PORT,
+  type ICreateCustomerPort,
+} from './ports/create-customer.port';
 
 @CommandHandler(RegisterCommand)
 export class RegisterHandler implements ICommandHandler<RegisterCommand> {
   public constructor(
-    private readonly commandBus: CommandBus,
-
     @Inject(ACCOUNTS_REPOSITORY)
     private readonly accountsRepository: IAccountsRepository,
+
+    @Inject(CREATE_USER_PORT)
+    private readonly createUserPort: ICreateUserPort,
+
+    @Inject(CREATE_CUSTOMER_PORT)
+    private readonly createCustomerPort: ICreateCustomerPort,
 
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
@@ -27,15 +38,13 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
 
   public async execute(command: RegisterCommand): Promise<void> {
     return this.unitOfWork.run(async () => {
-      const user = await this.commandBus.execute(
-        new CreateUserCommand(
-          command.firstName,
-          command.lastName,
-          command.email,
-        ),
-      );
+      const user = await this.createUserPort.execute({
+        firstName: command.firstName,
+        lastName: command.lastName,
+        email: command.email,
+      });
 
-      await this.commandBus.execute(new CreateCustomerCommand(user.id));
+      await this.createCustomerPort.execute({ userId: user.id });
 
       const account = await Account.create({
         userId: user.id,

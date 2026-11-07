@@ -6,6 +6,6 @@ curl -X POST "{{BASE_URL}}/register" \
   -d '{
     "firstName": "Thai",
     "lastName": "Thai",
-    "email": "test22222322@example.com",
-    "password": "a1234562222"
+    "email": "phamdinhthai123@example.com",
+    "password": "phamdinhthai123"
   }'

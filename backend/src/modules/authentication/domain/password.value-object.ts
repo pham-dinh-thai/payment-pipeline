@@ -5,19 +5,30 @@ export class Password {
   private static readonly MIN_LENGTH = 8;
   private static readonly MAX_LENGTH = 128;
 
+  private static readonly HASH_OPTIONS: argon2.HashOptions = {
+    type: argon2.argon2id,
+    memoryCost: 19456, // KiB (~19 MiB)
+    timeCost: 2,
+    parallelism: 1,
+  };
+
+  private static readonly dummyHash = argon2.hash(
+    'dummy-password-for-timing-equalization',
+    Password.HASH_OPTIONS,
+  ); // Uses dummy hash to prevent timing attacks and user enumeration
+
   private constructor(private readonly value: string) {}
 
   public static async fromPlainText(plain: string): Promise<Password> {
     Password.validate(plain);
 
-    const hashed = await argon2.hash(plain, {
-      type: argon2.argon2id,
-      memoryCost: 19456, // KiB (~19 MiB)
-      timeCost: 2,
-      parallelism: 1,
-    });
+    const hashed = await argon2.hash(plain, Password.HASH_OPTIONS);
 
     return new Password(hashed);
+  }
+
+  public static async verifyDummy(plain: string): Promise<void> {
+    await argon2.verify(await Password.dummyHash, plain);
   }
 
   public static fromHashed(hashed: string): Password {

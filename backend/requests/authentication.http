@@ -14,6 +14,6 @@ curl -X POST "{{BASE_URL}}/register" \
 curl -X POST  "{{BASE_URL}}/login" \
   -H "Content-Type: application/json" \ 
   -d '{
-    "email": "phamdinhthai12333333@example.com",
-    "password": "phamdinhthai123"
+    "email": "phamdinhthai1233@example.com",
+    "password": "phamdinhthai1233"
   }'

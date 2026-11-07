@@ -7,6 +7,8 @@ async function bootstrap() {
     logger: ['log', 'error', 'warn'],
   });
 
+  app.useSecurityHeaders();
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

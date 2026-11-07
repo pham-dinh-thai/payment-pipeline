@@ -9,16 +9,22 @@ import { MikroAccount } from '../entities/mikro-account.entity';
 export class MikroAccountsRepository implements IAccountsRepository {
   public constructor(private readonly entityManager: EntityManager) {}
 
-  public async findByUserIdOrFail(userId: string): Promise<Account> {
+  public async findByUserId(userId: string): Promise<Account | null> {
     const mikroAccount = await this.entityManager.findOne(MikroAccount, {
       userId,
     });
 
-    if (!mikroAccount) {
+    return mikroAccount ? AccountMapper.toDomain(mikroAccount) : null;
+  }
+
+  public async findByUserIdOrFail(userId: string): Promise<Account> {
+    const account = await this.findByUserId(userId);
+
+    if (!account) {
       throw new NotFoundException(`Account with userId ${userId} not found`);
     }
 
-    return AccountMapper.toDomain(mikroAccount);
+    return account;
   }
 
   public create(account: Account): Account {

@@ -15,9 +15,10 @@ import { Password } from '../../../domain/password.value-object';
 
 @CommandHandler(LoginCommand)
 export class LoginHandler implements ICommandHandler<LoginCommand> {
-  private static readonly DUMMY_HASH = Password.fromHashed(
-    '$argon2id$v=19$m=19,t=2,p=1$Y0NOdlVMaUJab1VqYk91Wg$xaGho2hssx4Fouiny58tpA',
-  );
+  // Valid UUID that never belongs to a real account. Looking it up lets the
+  // "unknown email" branch run the same DB round-trip as a real login.
+  private static readonly DUMMY_USER_ID =
+    '00000000-0000-0000-0000-000000000000';
 
   public constructor(
     @Inject(ACCOUNTS_REPOSITORY)
@@ -33,15 +34,20 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
   public async execute(
     command: LoginCommand,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const exists = await this.getUserByEmailPort.execute(command.email);
+    const user = await this.getUserByEmailPort.execute(command.email);
 
-    if (!exists) {
-      await LoginHandler.DUMMY_HASH.verify(command.password); // Doesn't matter if it's true or false; its main purpose is to prevent timing attack / user enumeration
+    // Resolve the account even when the email is unknown, so both branches do
+    // the same number of DB round-trips before the Argon2 verification below.
+    const account = await this.accountsRepository.findByUserId(
+      user?.id ?? LoginHandler.DUMMY_USER_ID,
+    );
+
+    if (!user || !account) {
+      // Doesn't matter if it's true or false; its main purpose is to prevent timing attack / user enumeration
+      await Password.verifyDummy(command.password);
 
       throw new BadRequestException('Email or password invalid');
     }
-
-    const account = await this.accountsRepository.findByUserIdOrFail(exists.id);
 
     if (!(await account.verify(command.password))) {
       throw new BadRequestException('Email or password invalid');
@@ -50,7 +56,7 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
     return await this.signTokenPort.sign(
       {
         userId: account.getUserId(),
-        email: exists.email,
+        email: user.email,
       },
       {
         sub: account.getUserId(),

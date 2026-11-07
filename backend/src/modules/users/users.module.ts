@@ -8,6 +8,7 @@ import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-u
 import { UNIT_OF_WORK } from '../../shared/application/unit-of-work';
 import { MikroUser } from './infrastructure/entities/mikro-user.entity';
 import { ChangeUserEmailHandler } from './application/commands/change-user-email/change-user-email.handler';
+import { GetUserByEmailHandler } from './application/queries/get-user-by-email/get-user-by-email.handler';
 
 @Module({
   controllers: [UsersController],
@@ -17,6 +18,7 @@ import { ChangeUserEmailHandler } from './application/commands/change-user-email
     { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
     CreateUserHandler,
     ChangeUserEmailHandler,
+    GetUserByEmailHandler,
   ],
 })
 export class UsersModule {}

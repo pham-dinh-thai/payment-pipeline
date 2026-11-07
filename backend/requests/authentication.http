@@ -1,0 +1,19 @@
+@BASE_URL="http://localhost:3000/authentication"
+
+### Register
+curl -X POST "{{BASE_URL}}/register" \ 
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Thai",
+    "lastName": "Thai",
+    "email": "phamdinhthai123@example.com",
+    "password": "phamdinhthai123"
+  }'
+
+### Login
+curl -X POST  "{{BASE_URL}}/login" \
+  -H "Content-Type: application/json" \ 
+  -d '{
+    "email": "phamdinhthai12333333@example.com",
+    "password": "phamdinhthai123"
+  }'

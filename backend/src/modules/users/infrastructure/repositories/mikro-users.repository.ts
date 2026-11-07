@@ -15,6 +15,12 @@ export class MikroUsersRepository implements IUsersRepository {
     return mikroUser ? UserMapper.toDomain(mikroUser) : null;
   }
 
+  public async findByEmail(email: string): Promise<User | null> {
+    const mikroUser = await this.entityManager.findOne(MikroUser, { email });
+
+    return mikroUser ? UserMapper.toDomain(mikroUser) : null;
+  }
+
   public async existsByEmail(email: string): Promise<boolean> {
     const mikroUser = await this.entityManager.findOne(MikroUser, { email });
 

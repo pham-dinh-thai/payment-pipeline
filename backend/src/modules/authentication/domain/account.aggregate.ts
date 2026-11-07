@@ -6,6 +6,15 @@ export type CreateAccountProps = {
   password: string;
 };
 
+export type FromPersistentAccountProps = {
+  id: string;
+  userId: string;
+  password: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export class Account {
   private constructor(
     private readonly id: Id,
@@ -27,6 +36,21 @@ export class Account {
       now,
       now,
     );
+  }
+
+  public static fromPersistent(props: FromPersistentAccountProps): Account {
+    return new Account(
+      Id.create(props.id),
+      props.userId,
+      Password.fromHashed(props.password),
+      props.isActive,
+      props.createdAt,
+      props.updatedAt,
+    );
+  }
+
+  public async verify(plain: string): Promise<boolean> {
+    return this.password.verify(plain);
   }
 
   public getId(): string {

@@ -9,9 +9,16 @@ import {
   ACCOUNTS_REPOSITORY,
   type IAccountsRepository,
 } from '../../../domain/accounts.repository';
-import { type ISignTokenPort, SIGN_TOKEN_PORT } from './ports/sign-token.port';
+import {
+  type ISignTokenPort,
+  SIGN_TOKEN_PORT,
+} from '../../ports/sign-token.port';
 import { randomUUID } from 'crypto';
 import { Password } from '../../../domain/password.value-object';
+import {
+  type IRefreshTokenStorePort,
+  REFRESH_TOKEN_STORE_PORT,
+} from '../../ports/refresh-token-store.port';
 
 @CommandHandler(LoginCommand)
 export class LoginHandler implements ICommandHandler<LoginCommand> {
@@ -29,6 +36,9 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
     @Inject(SIGN_TOKEN_PORT)
     private readonly signTokenPort: ISignTokenPort,
+
+    @Inject(REFRESH_TOKEN_STORE_PORT)
+    private readonly refreshTokenStorePort: IRefreshTokenStorePort,
   ) {}
 
   public async execute(
@@ -53,15 +63,26 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       throw new BadRequestException('Email or password invalid');
     }
 
-    return await this.signTokenPort.sign(
+    const sub = account.getUserId();
+    const jti = randomUUID();
+    const { accessToken, refreshToken } = await this.signTokenPort.sign(
       {
-        userId: account.getUserId(),
+        sub,
         email: user.email,
       },
       {
-        sub: account.getUserId(),
-        jti: randomUUID(),
+        sub,
+        jti,
       },
     );
+
+    await this.refreshTokenStorePort.save(
+      sub,
+      jti,
+      refreshToken,
+      7 * 24 * 60 * 60,
+    );
+
+    return { accessToken, refreshToken };
   }
 }

@@ -28,5 +28,6 @@ import { ListRolesHandler } from './application/queries/list-roles/list-roles.ha
     GetRoleHandler,
     ListRolesHandler,
   ],
+  exports: [ROLES_REPOSITORY],
 })
 export class AuthorizationModule {}

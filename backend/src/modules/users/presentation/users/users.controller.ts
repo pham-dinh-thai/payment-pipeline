@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Logger,
   Param,
   ParseUUIDPipe,
@@ -13,6 +14,9 @@ import { CreateUserCommand } from '../../application/commands/create-user/create
 import { ChangeUserEmailCommand } from '../../application/commands/change-user-email/change-user-email.command';
 import { ChangeUserEmailRequest } from './requests/change-user-email.request';
 import { ChangeUserEmailReadModel } from '../../application/commands/change-user-email/change-user-email.read-model';
+import { AssignRoleCommand } from '../../application/commands/assign-role/assign-role.command';
+import { RemoveRoleCommand } from '../../application/commands/remove-role/remove-role.command';
+import { AssignRoleRequest } from './requests/assign-role.request';
 
 @Controller('users')
 export class UsersController {
@@ -45,5 +49,21 @@ export class UsersController {
     this.logger.log(`User ${id} email changed`, response);
 
     return response;
+  }
+
+  @Post(':id/roles')
+  public assignRole(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Body() request: AssignRoleRequest,
+  ): Promise<{ id: string; roleIds: string[] }> {
+    return this.commandBus.execute(new AssignRoleCommand(id, request.roleId));
+  }
+
+  @Delete(':id/roles/:roleId')
+  public removeRole(
+    @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @Param('roleId', new ParseUUIDPipe({ version: '4' })) roleId: string,
+  ): Promise<{ id: string; roleIds: string[] }> {
+    return this.commandBus.execute(new RemoveRoleCommand(id, roleId));
   }
 }

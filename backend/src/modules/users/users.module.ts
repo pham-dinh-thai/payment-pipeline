@@ -10,10 +10,13 @@ import { MikroUser } from './infrastructure/entities/mikro-user.entity';
 import { ChangeUserEmailHandler } from './application/commands/change-user-email/change-user-email.handler';
 import { GetUserByEmailHandler } from './application/queries/get-user-by-email/get-user-by-email.handler';
 import { GetUserByIdHandler } from './application/queries/get-user-by-id/get-user-by-id.handler';
+import { AuthorizationModule } from '../authorization/authorization.module';
+import { AssignRoleHandler } from './application/commands/assign-role/assign-role.handler';
+import { RemoveRoleHandler } from './application/commands/remove-role/remove-role.handler';
 
 @Module({
   controllers: [UsersController],
-  imports: [MikroOrmModule.forFeature([MikroUser])],
+  imports: [MikroOrmModule.forFeature([MikroUser]), AuthorizationModule],
   providers: [
     { provide: USERS_REPOSITORY, useClass: MikroUsersRepository },
     { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
@@ -21,6 +24,8 @@ import { GetUserByIdHandler } from './application/queries/get-user-by-id/get-use
     ChangeUserEmailHandler,
     GetUserByEmailHandler,
     GetUserByIdHandler,
+    AssignRoleHandler,
+    RemoveRoleHandler,
   ],
 })
 export class UsersModule {}

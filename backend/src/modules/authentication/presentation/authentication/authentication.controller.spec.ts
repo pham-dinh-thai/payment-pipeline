@@ -1,4 +1,7 @@
+import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
+import { CommandBus } from '@nestjs/cqrs';
+import { ConfigService } from '@nestjs/config';
 import { AuthenticationController } from './authentication.controller';
 
 describe('AuthenticationController', () => {
@@ -7,6 +10,16 @@ describe('AuthenticationController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthenticationController],
+      providers: [
+        {
+          provide: CommandBus,
+          useValue: { execute: jest.fn() },
+        },
+        {
+          provide: ConfigService,
+          useValue: { get: jest.fn() },
+        },
+      ],
     }).compile();
 
     controller = module.get<AuthenticationController>(AuthenticationController);

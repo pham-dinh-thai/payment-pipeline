@@ -1504,6 +1504,23 @@
           "enumItems": [],
           "mappedType": "string"
         },
+        "role_ids": {
+          "name": "role_ids",
+          "type": "text[]",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": "'{}'",
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "array"
+        },
         "updated_at": {
           "name": "updated_at",
           "type": "timestamptz(6)",
@@ -1542,6 +1559,17 @@
           "keyName": "users_pkey",
           "primary": true,
           "unique": true
+        },
+        {
+          "columnNames": [
+            "role_ids"
+          ],
+          "composite": false,
+          "constraint": false,
+          "keyName": "users_role_ids_gin",
+          "primary": false,
+          "unique": false,
+          "type": "gin"
         }
       ],
       "checks": [],

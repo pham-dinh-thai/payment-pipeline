@@ -31,3 +31,44 @@ export function isResource(value: string): value is Resource {
 export function isActionAllowed(resource: Resource, action: string): boolean {
   return (PERMISSIONS[resource] as readonly string[]).includes(action);
 }
+
+export function parsePermissionKey(
+  value: string,
+): { resource: Resource; action: string } | null {
+  const separator = value.indexOf(':');
+
+  if (separator === -1) {
+    return null;
+  }
+
+  const resource = value.slice(0, separator);
+  const action = value.slice(separator + 1);
+
+  if (!isResource(resource)) {
+    return null;
+  }
+
+  if (action !== MANAGE_ACTION && !isActionAllowed(resource, action)) {
+    return null;
+  }
+
+  return { resource, action };
+}
+
+export function isPermissionKey(value: string): value is PermissionKey {
+  return parsePermissionKey(value) !== null;
+}
+
+export function permissionMatches(
+  granted: PermissionKey,
+  resource: Resource,
+  action: string,
+): boolean {
+  const parsed = parsePermissionKey(granted);
+
+  if (!parsed || parsed.resource !== resource) {
+    return false;
+  }
+
+  return parsed.action === MANAGE_ACTION || parsed.action === action;
+}

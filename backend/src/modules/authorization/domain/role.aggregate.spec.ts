@@ -3,16 +3,11 @@ import {
   ConflictException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Permission } from './permission/permission.entity';
+import { PermissionKey } from './permission/permission-catalog';
 import { Role } from './role.aggregate';
 
 const UUID_V4_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
-const permission = (
-  resource: 'orders' | 'reports',
-  action: 'read' | 'process' | 'export' | 'manage',
-): Permission => Permission.create({ resource, action } as never);
 
 const createRole = (): Role => Role.create({ name: 'manager' });
 
@@ -45,27 +40,44 @@ describe('Role', () => {
   it('grants a permission and exposes it through hasPermission', () => {
     const role = createRole();
 
-    role.grant(permission('orders', 'process'));
+    role.grant('orders:process');
 
     expect(role.hasPermission('orders', 'process')).toBe(true);
     expect(role.hasPermission('orders', 'refund')).toBe(false);
-    expect(role.getPermissions()).toHaveLength(1);
+    expect(role.getPermissions()).toEqual(['orders:process']);
   });
 
   it('rejects granting the same permission twice', () => {
     const role = createRole();
 
-    role.grant(permission('orders', 'process'));
+    role.grant('orders:process');
 
-    expect(() => role.grant(permission('orders', 'process'))).toThrow(
-      ConflictException,
-    );
+    expect(() => role.grant('orders:process')).toThrow(ConflictException);
+  });
+
+  it('rejects invalid permission keys', () => {
+    const role = createRole();
+    const invalid = 'orders:approve' as unknown as PermissionKey;
+
+    expect(() => role.grant(invalid)).toThrow(UnprocessableEntityException);
+    expect(() =>
+      Role.create({ name: 'manager', permissions: [invalid] }),
+    ).toThrow(UnprocessableEntityException);
+  });
+
+  it('rejects duplicate permissions on creation', () => {
+    expect(() =>
+      Role.create({
+        name: 'manager',
+        permissions: ['orders:read', 'orders:read'],
+      }),
+    ).toThrow(UnprocessableEntityException);
   });
 
   it('lets a manage permission cover every action on its resource', () => {
     const role = Role.create({
       name: 'manager',
-      permissions: [permission('orders', 'manage')],
+      permissions: ['orders:manage'],
     });
 
     expect(role.hasPermission('orders', 'process')).toBe(true);
@@ -82,13 +94,12 @@ describe('Role', () => {
 
   it('revokes a permission and rejects revoking an absent one', () => {
     const role = createRole();
-    const read = permission('orders', 'read');
 
-    role.grant(read);
-    role.revoke(read);
+    role.grant('orders:read');
+    role.revoke('orders:read');
 
     expect(role.hasPermission('orders', 'read')).toBe(false);
-    expect(() => role.revoke(read)).toThrow(ConflictException);
+    expect(() => role.revoke('orders:read')).toThrow(ConflictException);
   });
 
   it('updates name and updatedAt on rename', () => {
@@ -122,7 +133,7 @@ describe('Role', () => {
     const role = Role.fromPersistent({
       id: 'd3d3d3d3-d3d3-4d3d-8d3d-d3d3d3d3d3d3',
       name: 'admin',
-      permissions: [permission('reports', 'export')],
+      permissions: ['reports:export'],
       isSuperAdmin: true,
       createdAt,
       updatedAt,

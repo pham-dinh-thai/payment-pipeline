@@ -3,21 +3,25 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { Id } from '../../../shared/domain/value-objects/id.value-object';
-import { Permission } from './permission/permission.entity';
-import { Resource } from './permission/permission-catalog';
+import {
+  isPermissionKey,
+  PermissionKey,
+  permissionMatches,
+  Resource,
+} from './permission/permission-catalog';
 
 const MAX_NAME_LENGTH = 50;
 
 export type CreateRoleProps = {
   name: string;
-  permissions?: Permission[];
+  permissions?: PermissionKey[];
   isSuperAdmin?: boolean;
 };
 
 export type FromPersistentRoleProps = {
   id: string;
   name: string;
-  permissions: Permission[];
+  permissions: PermissionKey[];
   isSuperAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -27,7 +31,7 @@ export class Role {
   private constructor(
     private readonly id: Id,
     private name: string,
-    private readonly permissions: Permission[],
+    private readonly permissions: Set<PermissionKey>,
     private isSuperAdmin: boolean,
     private readonly createdAt: Date,
     private updatedAt: Date,
@@ -35,14 +39,15 @@ export class Role {
 
   public static create(props: CreateRoleProps): Role {
     const now = new Date();
-    const permissions = [...(props.permissions ?? [])];
+    const permissions = props.permissions ?? [];
 
+    Role.assertValidPermissions(permissions);
     Role.assertNoDuplicatePermissions(permissions);
 
     return new Role(
       Id.generate(),
       Role.normalizeName(props.name),
-      permissions,
+      new Set(permissions),
       props.isSuperAdmin ?? false,
       now,
       now,
@@ -53,7 +58,7 @@ export class Role {
     return new Role(
       Id.create(props.id),
       props.name,
-      [...props.permissions],
+      new Set(props.permissions),
       props.isSuperAdmin,
       props.createdAt,
       props.updatedAt,
@@ -65,33 +70,29 @@ export class Role {
     this.touch();
   }
 
-  public grant(permission: Permission): void {
-    const alreadyGranted = this.permissions.some(
-      (granted) => granted.getKey() === permission.getKey(),
-    );
+  public grant(permission: PermissionKey): void {
+    Role.assertValidPermission(permission);
 
-    if (alreadyGranted) {
+    if (this.permissions.has(permission)) {
       throw new ConflictException(
-        `Role already has permission "${permission.getKey()}"`,
+        `Role already has permission "${permission}"`,
       );
     }
 
-    this.permissions.push(permission);
+    this.permissions.add(permission);
     this.touch();
   }
 
-  public revoke(permission: Permission): void {
-    const index = this.permissions.findIndex(
-      (granted) => granted.getKey() === permission.getKey(),
-    );
+  public revoke(permission: PermissionKey): void {
+    Role.assertValidPermission(permission);
 
-    if (index === -1) {
+    if (!this.permissions.has(permission)) {
       throw new ConflictException(
-        `Role does not have permission "${permission.getKey()}"`,
+        `Role does not have permission "${permission}"`,
       );
     }
 
-    this.permissions.splice(index, 1);
+    this.permissions.delete(permission);
     this.touch();
   }
 
@@ -100,9 +101,13 @@ export class Role {
       return true;
     }
 
-    return this.permissions.some((permission) =>
-      permission.matches(resource, action),
-    );
+    for (const permission of this.permissions) {
+      if (permissionMatches(permission, resource, action)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   public promoteToSuperAdmin(): void {
@@ -123,7 +128,7 @@ export class Role {
     return this.name;
   }
 
-  public getPermissions(): Permission[] {
+  public getPermissions(): PermissionKey[] {
     return [...this.permissions];
   }
 
@@ -159,10 +164,24 @@ export class Role {
     return name;
   }
 
-  private static assertNoDuplicatePermissions(permissions: Permission[]): void {
-    const keys = new Set(permissions.map((permission) => permission.getKey()));
+  private static assertValidPermissions(permissions: PermissionKey[]): void {
+    permissions.forEach((permission) => Role.assertValidPermission(permission));
+  }
 
-    if (keys.size !== permissions.length) {
+  private static assertValidPermission(
+    permission: string,
+  ): asserts permission is PermissionKey {
+    if (!isPermissionKey(permission)) {
+      throw new UnprocessableEntityException(
+        `Invalid permission "${permission}"`,
+      );
+    }
+  }
+
+  private static assertNoDuplicatePermissions(
+    permissions: PermissionKey[],
+  ): void {
+    if (new Set(permissions).size !== permissions.length) {
       throw new UnprocessableEntityException(
         'Duplicate permissions are not allowed',
       );

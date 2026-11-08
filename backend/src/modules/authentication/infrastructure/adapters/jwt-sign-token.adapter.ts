@@ -5,7 +5,7 @@ import { StringValue } from 'ms';
 import {
   AccessTokenPayload,
   RefreshTokenPayload,
-} from '../../application/commands/login/ports/sign-token.port';
+} from '../../application/ports/sign-token.port';
 
 @Injectable()
 export class JwtSignTokenAdapter {

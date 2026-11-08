@@ -9,6 +9,7 @@ import { UNIT_OF_WORK } from '../../shared/application/unit-of-work';
 import { MikroUser } from './infrastructure/entities/mikro-user.entity';
 import { ChangeUserEmailHandler } from './application/commands/change-user-email/change-user-email.handler';
 import { GetUserByEmailHandler } from './application/queries/get-user-by-email/get-user-by-email.handler';
+import { GetUserByIdHandler } from './application/queries/get-user-by-id/get-user-by-id.handler';
 
 @Module({
   controllers: [UsersController],
@@ -19,6 +20,7 @@ import { GetUserByEmailHandler } from './application/queries/get-user-by-email/g
     CreateUserHandler,
     ChangeUserEmailHandler,
     GetUserByEmailHandler,
+    GetUserByIdHandler,
   ],
 })
 export class UsersModule {}

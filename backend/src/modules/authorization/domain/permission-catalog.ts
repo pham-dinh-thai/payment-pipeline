@@ -1,6 +1,3 @@
-// Source of truth for every permission the application enforces.
-// Add an action here only when there is code (guard/policy) that checks it.
-// `manage` is a reserved wildcard and must not be listed here.
 export const PERMISSIONS = {
   accounts: ['read', 'update'],
   users: ['create', 'read', 'update', 'delete'],

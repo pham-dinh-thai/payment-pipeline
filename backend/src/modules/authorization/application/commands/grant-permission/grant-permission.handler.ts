@@ -1,0 +1,40 @@
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { Inject, NotFoundException } from '@nestjs/common';
+import {
+  type IRolesRepository,
+  ROLES_REPOSITORY,
+} from '../../../domain/roles.repository';
+import {
+  type IUnitOfWork,
+  UNIT_OF_WORK,
+} from '../../../../../shared/application/unit-of-work';
+import { GrantPermissionCommand } from './grant-permission.command';
+
+@CommandHandler(GrantPermissionCommand)
+export class GrantPermissionHandler implements ICommandHandler<GrantPermissionCommand> {
+  public constructor(
+    @Inject(ROLES_REPOSITORY)
+    private readonly rolesRepository: IRolesRepository,
+
+    @Inject(UNIT_OF_WORK)
+    private readonly unitOfWork: IUnitOfWork,
+  ) {}
+
+  public async execute(
+    command: GrantPermissionCommand,
+  ): Promise<{ id: string }> {
+    return this.unitOfWork.run(async () => {
+      const role = await this.rolesRepository.findById(command.id);
+
+      if (!role) {
+        throw new NotFoundException(`Role id ${command.id} not found`);
+      }
+
+      role.grant(command.permission);
+
+      await this.rolesRepository.update(role);
+
+      return { id: role.getId() };
+    });
+  }
+}

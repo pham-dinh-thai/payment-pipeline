@@ -1,5 +1,5 @@
 import { Role } from '../../domain/role.aggregate';
-import { type PermissionKey } from '../../domain/permission/permission-catalog';
+import { type PermissionKey } from '../../domain/permission-catalog';
 import { MikroRole } from '../entities/mikro-role.entity';
 
 export class RoleMapper {
@@ -17,13 +17,17 @@ export class RoleMapper {
   public static toMikroOrm(role: Role): MikroRole {
     const mikroRole = new MikroRole();
 
+    RoleMapper.assign(mikroRole, role);
+
+    return mikroRole;
+  }
+
+  public static assign(mikroRole: MikroRole, role: Role): void {
     mikroRole.id = role.getId();
     mikroRole.name = role.getName();
     mikroRole.permissions = role.getPermissions();
     mikroRole.isSuperAdmin = role.getIsSuperAdmin();
     mikroRole.createdAt = role.getCreatedAt();
     mikroRole.updatedAt = role.getUpdatedAt();
-
-    return mikroRole;
   }
 }

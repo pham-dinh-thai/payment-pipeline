@@ -1,0 +1,47 @@
+@BASE_URL="http://localhost:3000/roles"
+@ROLE_ID=1c2e9d5b-2c3a-4d6e-9f8a-0b1c2d3e4f50
+
+### List roles
+curl -X GET "{{BASE_URL}}"
+
+
+### Get role
+curl -X GET "{{BASE_URL}}/{{ROLE_ID}}"
+
+
+### Create role
+curl -X POST "{{BASE_URL}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "manager",
+    "permissions": ["orders:read", "orders:process", "reports:view_sales"],
+    "isSuperAdmin": false
+  }'
+
+
+### Rename role
+curl -X PATCH "{{BASE_URL}}/{{ROLE_ID}}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "senior-manager"
+  }'
+
+
+### Grant permission
+curl -X POST "{{BASE_URL}}/{{ROLE_ID}}/permissions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "permission": "orders:manage"
+  }'
+
+
+### Revoke permission
+curl -X DELETE "{{BASE_URL}}/{{ROLE_ID}}/permissions/orders:manage"
+
+
+### Set super admin
+curl -X PATCH "{{BASE_URL}}/{{ROLE_ID}}/super-admin" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "isSuperAdmin": true
+  }'

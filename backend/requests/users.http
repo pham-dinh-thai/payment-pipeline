@@ -1,4 +1,6 @@
 @BASE_URL="http://localhost:3000/users"
+@USER_ID=69847b83-f448-40d4-9942-3d3dfa0d6acb
+@ROLE_ID=1c2e9d5b-2c3a-4d6e-9f8a-0b1c2d3e4f50
 
 ### Create
 curl -X POST "{{BASE_URL}}" \
@@ -11,8 +13,20 @@ curl -X POST "{{BASE_URL}}" \
 
 
 ### Change email
-curl -X PATCH "{{BASE_URL}}/69847b83-f448-40d4-9942-3d3dfa0d6acb/email" \
+curl -X PATCH "{{BASE_URL}}/{{USER_ID}}/email" \
   -H "Content-Type: application/json" \
   -d '{ 
     "email": "test123456@example.com" 
     }'
+
+
+### Assign role
+curl -X POST "{{BASE_URL}}/{{USER_ID}}/roles" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "roleId": "{{ROLE_ID}}"
+  }'
+
+
+### Remove role
+curl -X DELETE "{{BASE_URL}}/{{USER_ID}}/roles/{{ROLE_ID}}"

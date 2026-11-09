@@ -15,6 +15,7 @@ import { AuthenticationModule } from './modules/authentication/authentication.mo
 import { CustomersModule } from './modules/customers/customers.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
+import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 
 @Module({
   imports: [
@@ -45,6 +46,7 @@ import { AuthorizationModule } from './modules/authorization/authorization.modul
       }),
     }),
     AuthorizationModule,
+    AuditLogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

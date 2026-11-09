@@ -8,8 +8,6 @@ import { MikroGoodsReceiptsRepository } from './infrastructure/repositories/mikr
 import { CreateGoodsReceiptHandler } from './application/commands/create-goods-receipt/create-goods-receipt.handler';
 import { ConfirmGoodsReceiptHandler } from './application/commands/confirm-goods-receipt/confirm-goods-receipt.handler';
 import { CancelGoodsReceiptHandler } from './application/commands/cancel-goods-receipt/cancel-goods-receipt.handler';
-import { UNIT_OF_WORK } from '../../shared/application/unit-of-work';
-import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-unit-of-work';
 
 @Module({
   imports: [
@@ -21,7 +19,6 @@ import { MikroUnitOfWork } from '../../shared/infrastructure/persistence/mikro-u
       provide: GOODS_RECEIPTS_REPOSITORY,
       useClass: MikroGoodsReceiptsRepository,
     },
-    { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
     CreateGoodsReceiptHandler,
     ConfirmGoodsReceiptHandler,
     CancelGoodsReceiptHandler,

@@ -7,7 +7,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
-import { AuthGuard } from '../../../../shared/infrastructure/security/auth.guard';
+import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
 import { GetAuditLogQuery } from '../../application/queries/get-audit-log/get-audit-log.query';
 import { AuditLogReadModel } from '../../application/queries/get-audit-log/audit-log.read-model';
 import { ListAuditLogsQuery } from '../../application/queries/list-audit-logs/list-audit-logs.query';

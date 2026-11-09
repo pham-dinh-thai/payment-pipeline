@@ -3,7 +3,7 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Id } from '../../../shared/domain/value-objects/id.value-object';
+import { Id } from '../../../shared/value-objects/id.value-object';
 import { GoodsReceiptStatus } from './goods-receipt-status.enum';
 import { GoodsReceiptLine } from './goods-receipt-line.entity';
 import { GoodsReceiptCode } from './value-objects/goods-receipt-code.value-object';

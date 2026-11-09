@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { UnprocessableEntityException } from '@nestjs/common';
 import { ISuppliersRepository } from '../../../domain/suppliers.repository';
 import { Supplier } from '../../../domain/supplier.aggregate';
-import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
+import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { CreateSupplierCommand } from './create-supplier.command';
 import { CreateSupplierHandler } from './create-supplier.handler';
 

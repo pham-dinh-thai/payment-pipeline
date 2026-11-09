@@ -8,7 +8,7 @@ import {
 import {
   IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { ActivateSupplierCommand } from './activate-supplier.command';
 import { NotFoundException } from '@nestjs/common';
 import { Supplier } from '../../../domain/supplier.aggregate';

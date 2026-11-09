@@ -7,7 +7,7 @@ import { IAuditLogsRepository } from '../../../domain/audit-logs.repository';
 import { ActorType } from '../../../domain/enums/actor-type.enum';
 import { AuditStatus } from '../../../domain/enums/audit-status.enum';
 import { EntityType } from '../../../domain/enums/entity-type.enum';
-import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
+import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { RecordAuditLogCommand } from './record-audit-log.command';
 import { RecordAuditLogHandler } from './record-audit-log.handler';
 

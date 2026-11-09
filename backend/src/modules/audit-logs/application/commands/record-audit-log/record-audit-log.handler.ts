@@ -8,7 +8,7 @@ import { AuditLog } from '../../../domain/audit-log.aggregate';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { RecordAuditLogCommand } from './record-audit-log.command';
 
 @CommandHandler(RecordAuditLogCommand)

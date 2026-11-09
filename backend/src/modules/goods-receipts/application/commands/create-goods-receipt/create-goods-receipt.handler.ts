@@ -9,7 +9,7 @@ import { GoodsReceiptLine } from '../../../domain/goods-receipt-line.entity';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { CreateGoodsReceiptCommand } from './create-goods-receipt.command';
 
 @CommandHandler(CreateGoodsReceiptCommand)

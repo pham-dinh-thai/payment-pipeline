@@ -9,7 +9,7 @@ import { GoodsReceipt } from '../../../domain/goods-receipt.aggregate';
 import { GoodsReceiptLine } from '../../../domain/goods-receipt-line.entity';
 import { GoodsReceiptStatus } from '../../../domain/goods-receipt-status.enum';
 import { ReceiveStockCommand } from '../../../../inventories/application/commands/receive-stock/receive-stock.command';
-import { type IUnitOfWork } from '../../../../../shared/application/unit-of-work';
+import { type IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { ConfirmGoodsReceiptCommand } from './confirm-goods-receipt.command';
 import { ConfirmGoodsReceiptHandler } from './confirm-goods-receipt.handler';
 

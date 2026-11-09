@@ -10,7 +10,7 @@ import {
   IInventoriesRepository,
 } from '../../../domain/inventories.repository';
 import { Inventory } from '../../../domain/inventory.aggregate';
-import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
+import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { ReconcileBatchStockCommand } from './reconcile-batch-stock.command';
 import { ReconcileBatchStockHandler } from './reconcile-batch-stock.handler';
 

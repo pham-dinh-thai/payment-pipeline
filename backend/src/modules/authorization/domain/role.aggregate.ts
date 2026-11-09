@@ -2,7 +2,7 @@ import {
   ConflictException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Id } from '../../../shared/domain/value-objects/id.value-object';
+import { Id } from '../../../shared/value-objects/id.value-object';
 import {
   isPermissionKey,
   PermissionKey,

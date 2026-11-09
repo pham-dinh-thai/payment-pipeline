@@ -4,7 +4,7 @@ import { ConflictException, Inject } from '@nestjs/common';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import {
   CUSTOMERS_REPOSITORY,
   type ICustomersRepository,

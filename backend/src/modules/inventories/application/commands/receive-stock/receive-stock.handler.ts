@@ -10,7 +10,7 @@ import { BatchStatus } from '../../../domain/batch/batch-status.enum';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 
 @CommandHandler(ReceiveStockCommand)
 export class ReceiveStockHandler implements ICommandHandler<ReceiveStockCommand> {

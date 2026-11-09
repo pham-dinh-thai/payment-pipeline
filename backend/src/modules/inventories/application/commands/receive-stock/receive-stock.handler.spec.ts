@@ -7,7 +7,7 @@ import {
   IInventoriesRepository,
 } from '../../../domain/inventories.repository';
 import { Inventory } from '../../../domain/inventory.aggregate';
-import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
+import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { ReceiveStockCommand } from './receive-stock.command';
 import { ReceiveStockHandler } from './receive-stock.handler';
 

@@ -7,7 +7,7 @@ import {
 import { GoodsReceipt } from '../../../domain/goods-receipt.aggregate';
 import { GoodsReceiptLine } from '../../../domain/goods-receipt-line.entity';
 import { GoodsReceiptStatus } from '../../../domain/goods-receipt-status.enum';
-import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
+import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { CancelGoodsReceiptCommand } from './cancel-goods-receipt.command';
 import { CancelGoodsReceiptHandler } from './cancel-goods-receipt.handler';
 

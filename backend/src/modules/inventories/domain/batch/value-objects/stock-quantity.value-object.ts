@@ -1,5 +1,5 @@
 import { UnprocessableEntityException } from '@nestjs/common';
-import { Quantity } from '../../../../../shared/domain/value-objects/quantity.value-object';
+import { Quantity } from '../../../../../shared/value-objects/quantity.value-object';
 
 export class StockQuantity {
   private constructor(private readonly quantity: Quantity) {}

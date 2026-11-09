@@ -11,6 +11,7 @@ import { MikroUser } from './src/modules/users/infrastructure/entities/mikro-use
 import { MikroAccount } from './src/modules/authentication/infrastructure/entities/mikro-account.entity';
 import { MikroCustomer } from './src/modules/customers/infrastructure/entities/mikro-customer.entity';
 import { MikroRole } from './src/modules/authorization/infrastructure/entities/mikro-role.entity';
+import { MikroAuditLog } from './src/modules/audit-logs/infrastructure/entities/mikro-audit-log.entity';
 
 dotenv.config({ path: path.resolve('../.env') });
 
@@ -32,6 +33,7 @@ export default defineConfig({
     MikroAccount,
     MikroCustomer,
     MikroRole,
+    MikroAuditLog,
   ],
   entitiesTs: [
     MikroProduct,
@@ -44,6 +46,7 @@ export default defineConfig({
     MikroAccount,
     MikroCustomer,
     MikroRole,
+    MikroAuditLog,
   ],
 
   debug: process.env.NODE_ENV !== 'production',

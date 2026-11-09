@@ -10,6 +10,7 @@ async function bootstrap() {
 
   app.useSecurityHeaders();
   app.use(cookieParser());
+  app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

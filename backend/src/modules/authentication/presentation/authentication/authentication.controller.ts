@@ -32,7 +32,7 @@ export class AuthenticationController {
       httpOnly: true,
       secure: this.configService.get('NODE_ENV') === 'production',
       sameSite: 'strict',
-      path: '/authentication/refresh',
+      path: '/api/authentication/refresh',
       maxAge: REFRESH_MAX_AGE_MS,
     });
   }

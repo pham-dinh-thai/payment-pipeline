@@ -1,17 +1,33 @@
-@BASE_URL=http://localhost:3000/roles
+@BASE_URL=http://localhost:3000
 @ROLE_ID=d23dd497-6e0d-41dd-935f-92f08e7e3772
 
+### Login (run this first to obtain an access token)
+# @name login
+POST {{BASE_URL}}/authentication/login
+Content-Type: application/json
+
+{
+  "email": "phamdinhthai123@example.com",
+  "password": "phamdinhthai123"
+}
+
+### Access token from the login response above
+@ACCESS_TOKEN={{login.response.body.$.accessToken}}
+
 ### List roles
-GET {{BASE_URL}}
+GET {{BASE_URL}}/roles
+Authorization: Bearer {{ACCESS_TOKEN}}
 
 
 ### Get role
-GET {{BASE_URL}}/{{ROLE_ID}}
+GET {{BASE_URL}}/roles/{{ROLE_ID}}
+Authorization: Bearer {{ACCESS_TOKEN}}
 
 
 ### Create role
-POST {{BASE_URL}}
+POST {{BASE_URL}}/roles
 Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
 
 {
   "name": "manager",
@@ -21,8 +37,9 @@ Content-Type: application/json
 
 
 ### Rename role
-PATCH {{BASE_URL}}/{{ROLE_ID}}
+PATCH {{BASE_URL}}/roles/{{ROLE_ID}}
 Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
 
 {
   "name": "senior-manager"
@@ -30,8 +47,9 @@ Content-Type: application/json
 
 
 ### Grant permission
-POST {{BASE_URL}}/{{ROLE_ID}}/permissions
+POST {{BASE_URL}}/roles/{{ROLE_ID}}/permissions
 Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
 
 {
   "permission": "orders:manage"
@@ -39,12 +57,14 @@ Content-Type: application/json
 
 
 ### Revoke permission
-DELETE {{BASE_URL}}/{{ROLE_ID}}/permissions/orders:manage
+DELETE {{BASE_URL}}/roles/{{ROLE_ID}}/permissions/orders:manage
+Authorization: Bearer {{ACCESS_TOKEN}}
 
 
 ### Set super admin
-PATCH {{BASE_URL}}/{{ROLE_ID}}/super-admin
+PATCH {{BASE_URL}}/roles/{{ROLE_ID}}/super-admin
 Content-Type: application/json
+Authorization: Bearer {{ACCESS_TOKEN}}
 
 {
   "isSuperAdmin": true

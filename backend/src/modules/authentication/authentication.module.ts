@@ -14,8 +14,6 @@ import { CREATE_CUSTOMER_PORT } from './application/commands/register/ports/crea
 import { CreateCustomerAdapter } from './infrastructure/adapters/create-customer.adapter';
 import { GET_USER_BY_EMAIL_PORT } from './application/commands/login/ports/get-user-by-email.port';
 import { GetUserByEmailAdapter } from './infrastructure/adapters/get-user-by-email.adapter';
-import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import { SIGN_TOKEN_PORT } from './application/ports/sign-token.port';
 import { JwtSignTokenAdapter } from './infrastructure/adapters/jwt-sign-token.adapter';
 import { REFRESH_TOKEN_STORE_PORT } from './application/ports/refresh-token-store.port';
@@ -25,17 +23,10 @@ import { JwtRefreshTokenVerifyAdapter } from './infrastructure/adapters/jwt-refr
 import { RefreshTokenHandler } from './application/commands/refresh-token/refresh-token.handler';
 import { GET_USER_BY_ID_PORT } from './application/commands/refresh-token/ports/get-user-by-id-port';
 import { GetUserByIdAdapter } from './infrastructure/adapters/get-user-by-id.adapter';
+import { SecurityModule } from '../../shared/infrastructure/security/security.module';
 
 @Module({
-  imports: [
-    MikroOrmModule.forFeature([MikroAccount]),
-    JwtModule.registerAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        signOptions: { expiresIn: config.getOrThrow('JWT_ACCESS_EXPIRES_IN') },
-      }),
-    }),
-  ],
+  imports: [MikroOrmModule.forFeature([MikroAccount]), SecurityModule],
   providers: [
     { provide: UNIT_OF_WORK, useClass: MikroUnitOfWork },
     { provide: ACCOUNTS_REPOSITORY, useClass: MikroAccountsRepository },

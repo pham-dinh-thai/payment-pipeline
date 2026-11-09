@@ -1,5 +1,5 @@
 import { Command } from '@nestjs/cqrs';
-import { type PermissionKey } from '../../../domain/permission-catalog';
+import { PermissionKey } from '../../../domain/permission/permission-catalog';
 
 export class RevokePermissionCommand extends Command<{ id: string }> {
   public constructor(

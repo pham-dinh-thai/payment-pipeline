@@ -3,7 +3,7 @@ import {
   ConflictException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { PermissionKey } from './permission-catalog';
+import { PermissionKey } from './permission/permission-catalog';
 import { Role } from './role.aggregate';
 
 const UUID_V4_REGEX =

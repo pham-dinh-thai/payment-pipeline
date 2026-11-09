@@ -59,6 +59,7 @@ export class RefreshTokenHandler implements ICommandHandler<RefreshTokenCommand>
       throw new UnauthorizedException('User Not Found');
     }
 
+    const newJti = randomUUID();
     const { accessToken, refreshToken } = await this.signTokenPort.sign(
       {
         sub,
@@ -66,13 +67,13 @@ export class RefreshTokenHandler implements ICommandHandler<RefreshTokenCommand>
       },
       {
         sub,
-        jti: randomUUID(),
+        jti: newJti,
       },
     );
 
     await this.refreshTokenStorePort.save(
       sub,
-      jti,
+      newJti,
       refreshToken,
       7 * 24 * 60 * 60,
     );

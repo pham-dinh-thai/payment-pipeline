@@ -13,9 +13,10 @@ import { RevokePermissionHandler } from './application/commands/revoke-permissio
 import { SetRoleSuperAdminHandler } from './application/commands/set-role-super-admin/set-role-super-admin.handler';
 import { GetRoleHandler } from './application/queries/get-role/get-role.handler';
 import { ListRolesHandler } from './application/queries/list-roles/list-roles.handler';
+import { SecurityModule } from '../../shared/infrastructure/security/security.module';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([MikroRole])],
+  imports: [MikroOrmModule.forFeature([MikroRole]), SecurityModule],
   controllers: [RolesController],
   providers: [
     { provide: ROLES_REPOSITORY, useClass: MikroRolesRepository },

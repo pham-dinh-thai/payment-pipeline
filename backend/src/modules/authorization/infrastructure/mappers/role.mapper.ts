@@ -1,5 +1,5 @@
+import { PermissionKey } from '../../domain/permission/permission-catalog';
 import { Role } from '../../domain/role.aggregate';
-import { type PermissionKey } from '../../domain/permission-catalog';
 import { MikroRole } from '../entities/mikro-role.entity';
 
 export class RoleMapper {

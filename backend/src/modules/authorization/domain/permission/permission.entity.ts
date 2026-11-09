@@ -1,12 +1,12 @@
-import { UnprocessableEntityException } from "@nestjs/common";
-import { Id } from "../../../../shared/domain/value-objects/id.value-object";
+import { UnprocessableEntityException } from '@nestjs/common';
+import { Id } from '../../../../shared/domain/value-objects/id.value-object';
 import {
   ActionOf,
   isActionAllowed,
   isResource,
   MANAGE_ACTION,
   Resource,
-} from "../permission-catalog";
+} from './permission-catalog';
 
 export type CreatePermissionProps = {
   resource: Resource;
@@ -35,8 +35,15 @@ export class Permission {
     return new Permission(Id.generate(), resource, action, new Date());
   }
 
-  public static fromPersistent(props: FromPersistentPermissionProps): Permission {
-    return new Permission(Id.create(props.id), props.resource, props.action, props.createdAt);
+  public static fromPersistent(
+    props: FromPersistentPermissionProps,
+  ): Permission {
+    return new Permission(
+      Id.create(props.id),
+      props.resource,
+      props.action,
+      props.createdAt,
+    );
   }
 
   public matches(resource: Resource, action: string): boolean {
@@ -87,7 +94,9 @@ export class Permission {
     }
 
     if (!action || !isActionAllowed(resource, action)) {
-      throw new UnprocessableEntityException(`Invalid action "${raw}" for resource "${resource}"`);
+      throw new UnprocessableEntityException(
+        `Invalid action "${raw}" for resource "${resource}"`,
+      );
     }
 
     return action;

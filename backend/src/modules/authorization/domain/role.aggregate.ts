@@ -8,7 +8,7 @@ import {
   PermissionKey,
   permissionMatches,
   Resource,
-} from './permission-catalog';
+} from './permission/permission-catalog';
 
 const MAX_NAME_LENGTH = 50;
 

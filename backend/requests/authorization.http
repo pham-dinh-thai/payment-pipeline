@@ -1,5 +1,5 @@
 @BASE_URL=http://localhost:3000/roles
-@ROLE_ID=1c2e9d5b-2c3a-4d6e-9f8a-0b1c2d3e4f50
+@ROLE_ID=d23dd497-6e0d-41dd-935f-92f08e7e3772
 
 ### List roles
 GET {{BASE_URL}}

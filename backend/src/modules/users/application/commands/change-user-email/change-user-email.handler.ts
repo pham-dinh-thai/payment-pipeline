@@ -40,6 +40,7 @@ export class ChangeUserEmailHandler implements ICommandHandler<ChangeUserEmailCo
         user.getFirstName(),
         user.getLastName(),
         user.getEmail(),
+        user.getRoleIds(),
       );
     });
   }

@@ -4,6 +4,7 @@ export class GetUserByEmailReadModel {
     public readonly firstName: string,
     public readonly lastName: string,
     public readonly email: string,
+    public readonly roleIds: string[],
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
   ) {}

@@ -1,9 +1,11 @@
+import { UnprocessableEntityException } from '@nestjs/common';
 import { Id } from '../../../shared/domain/value-objects/id.value-object';
 
 export type CreateUserProps = {
   firstName: string;
   lastName: string;
   email: string;
+  roleIds?: string[];
 };
 
 export type FromPersistentUserProps = {
@@ -11,6 +13,7 @@ export type FromPersistentUserProps = {
   firstName: string;
   lastName: string;
   email: string;
+  roleIds: string[];
   createdAt: Date;
   updatedAt: Date;
 };
@@ -21,6 +24,7 @@ export class User {
     private firstName: string,
     private lastName: string,
     private email: string,
+    private roleIds: string[],
     private readonly createdAt: Date,
     private updatedAt: Date,
   ) {}
@@ -32,6 +36,7 @@ export class User {
       props.firstName,
       props.lastName,
       props.email,
+      User.normalizeRoleIds(props.roleIds ?? []),
       now,
       now,
     );
@@ -43,6 +48,7 @@ export class User {
       props.firstName,
       props.lastName,
       props.email,
+      User.normalizeRoleIds(props.roleIds ?? []),
       props.createdAt,
       props.updatedAt,
     );
@@ -52,6 +58,32 @@ export class User {
     this.email = email;
 
     this.updatedAt = new Date();
+  }
+
+  public assignRole(roleId: string): void {
+    const normalized = User.normalizeRoleId(roleId);
+
+    if (this.roleIds.includes(normalized)) {
+      return;
+    }
+
+    this.roleIds = [...this.roleIds, normalized];
+    this.updatedAt = new Date();
+  }
+
+  public removeRole(roleId: string): void {
+    const normalized = User.normalizeRoleId(roleId);
+
+    if (!this.roleIds.includes(normalized)) {
+      return;
+    }
+
+    this.roleIds = this.roleIds.filter((id) => id !== normalized);
+    this.updatedAt = new Date();
+  }
+
+  public hasRole(roleId: string): boolean {
+    return this.roleIds.includes(roleId);
   }
 
   public getId(): string {
@@ -70,11 +102,31 @@ export class User {
     return this.email;
   }
 
+  public getRoleIds(): string[] {
+    return [...this.roleIds];
+  }
+
   public getCreatedAt(): Date {
     return this.createdAt;
   }
 
   public getUpdatedAt(): Date {
     return this.updatedAt;
+  }
+
+  private static normalizeRoleIds(roleIds: string[]): string[] {
+    const normalized = roleIds.map((roleId) => User.normalizeRoleId(roleId));
+
+    return [...new Set(normalized)];
+  }
+
+  private static normalizeRoleId(roleId: string): string {
+    const trimmed = roleId?.trim();
+
+    if (!trimmed) {
+      throw new UnprocessableEntityException('Role id is required');
+    }
+
+    return trimmed;
   }
 }

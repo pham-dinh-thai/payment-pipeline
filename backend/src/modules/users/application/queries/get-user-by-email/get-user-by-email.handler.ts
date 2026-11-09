@@ -28,6 +28,7 @@ export class GetUserByEmailHandler implements IQueryHandler<GetUserByEmailQuery>
       user.getFirstName(),
       user.getLastName(),
       user.getEmail(),
+      user.getRoleIds(),
       user.getCreatedAt(),
       user.getUpdatedAt(),
     );

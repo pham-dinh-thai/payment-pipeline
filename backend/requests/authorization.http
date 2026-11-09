@@ -1,0 +1,51 @@
+@BASE_URL=http://localhost:3000/roles
+@ROLE_ID=d23dd497-6e0d-41dd-935f-92f08e7e3772
+
+### List roles
+GET {{BASE_URL}}
+
+
+### Get role
+GET {{BASE_URL}}/{{ROLE_ID}}
+
+
+### Create role
+POST {{BASE_URL}}
+Content-Type: application/json
+
+{
+  "name": "manager",
+  "permissions": ["orders:read", "orders:process", "reports:view_sales"],
+  "isSuperAdmin": false
+}
+
+
+### Rename role
+PATCH {{BASE_URL}}/{{ROLE_ID}}
+Content-Type: application/json
+
+{
+  "name": "senior-manager"
+}
+
+
+### Grant permission
+POST {{BASE_URL}}/{{ROLE_ID}}/permissions
+Content-Type: application/json
+
+{
+  "permission": "orders:manage"
+}
+
+
+### Revoke permission
+DELETE {{BASE_URL}}/{{ROLE_ID}}/permissions/orders:manage
+
+
+### Set super admin
+PATCH {{BASE_URL}}/{{ROLE_ID}}/super-admin
+Content-Type: application/json
+
+{
+  "isSuperAdmin": true
+}

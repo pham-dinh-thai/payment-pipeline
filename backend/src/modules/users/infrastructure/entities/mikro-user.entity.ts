@@ -1,6 +1,12 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
+import {
+  Entity,
+  Index,
+  PrimaryKey,
+  Property,
+} from '@mikro-orm/decorators/legacy';
 
 @Entity({ tableName: 'users' })
+@Index({ name: 'users_role_ids_gin', properties: 'roleIds', type: 'gin' })
 export class MikroUser {
   @PrimaryKey({ type: 'uuid' })
   id!: string;
@@ -13,6 +19,9 @@ export class MikroUser {
 
   @Property({ unique: true, type: 'string' })
   email!: string;
+
+  @Property({ type: 'array', fieldName: 'role_ids', defaultRaw: "'{}'" })
+  roleIds: string[] = [];
 
   @Property({
     type: 'timestamptz',

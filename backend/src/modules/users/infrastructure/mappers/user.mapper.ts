@@ -8,6 +8,7 @@ export class UserMapper {
       firstName: mikroUser.firstName,
       lastName: mikroUser.lastName,
       email: mikroUser.email,
+      roleIds: mikroUser.roleIds,
       createdAt: mikroUser.createdAt,
       updatedAt: mikroUser.updatedAt,
     });
@@ -16,13 +17,18 @@ export class UserMapper {
   public static toMikroOrm(user: User): MikroUser {
     const mikroUser = new MikroUser();
 
+    UserMapper.assign(mikroUser, user);
+
+    return mikroUser;
+  }
+
+  public static assign(mikroUser: MikroUser, user: User): void {
     mikroUser.id = user.getId();
     mikroUser.firstName = user.getFirstName();
     mikroUser.lastName = user.getLastName();
     mikroUser.email = user.getEmail();
+    mikroUser.roleIds = user.getRoleIds();
     mikroUser.createdAt = user.getCreatedAt();
     mikroUser.updatedAt = user.getUpdatedAt();
-
-    return mikroUser;
   }
 }

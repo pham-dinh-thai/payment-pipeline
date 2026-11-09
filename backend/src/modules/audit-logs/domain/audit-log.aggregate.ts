@@ -15,10 +15,6 @@ const MAX_REASON_LENGTH = 1000;
 const MAX_ERROR_CODE_LENGTH = 100;
 const MAX_ERROR_MESSAGE_LENGTH = 2000;
 
-/**
- * A JSON-safe snapshot of an entity. It must never contain entities,
- * aggregates, ORM models, tokens, passwords, or other secrets.
- */
 export type AuditSnapshot = Record<string, unknown>;
 
 export type CreateAuditLogProps = {

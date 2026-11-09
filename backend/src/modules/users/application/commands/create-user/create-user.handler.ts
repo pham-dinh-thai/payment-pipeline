@@ -9,7 +9,7 @@ import { User } from '../../../domain/user.aggregate';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 
 @CommandHandler(CreateUserCommand)
 export class CreateUserHandler implements ICommandHandler<CreateUserCommand> {

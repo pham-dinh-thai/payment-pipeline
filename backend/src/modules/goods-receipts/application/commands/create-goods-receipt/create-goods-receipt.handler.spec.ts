@@ -6,7 +6,7 @@ import {
 } from '../../../domain/goods-receipts.repository';
 import { GoodsReceipt } from '../../../domain/goods-receipt.aggregate';
 import { GoodsReceiptStatus } from '../../../domain/goods-receipt-status.enum';
-import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
+import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import {
   CreateGoodsReceiptCommand,
   CreateGoodsReceiptLineProps,

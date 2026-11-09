@@ -1,4 +1,4 @@
-import { Id } from '../../../shared/domain/value-objects/id.value-object';
+import { Id } from '../../../shared/value-objects/id.value-object';
 import { Password } from './password.value-object';
 
 export type CreateAccountProps = {

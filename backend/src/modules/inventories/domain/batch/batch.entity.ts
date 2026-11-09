@@ -1,8 +1,8 @@
-import { Id } from '../../../../shared/domain/value-objects/id.value-object';
+import { Id } from '../../../../shared/value-objects/id.value-object';
 import { BatchStatus } from './batch-status.enum';
 import { LotNumber } from './value-objects/lot-number.value-object';
 import { StockQuantity } from './value-objects/stock-quantity.value-object';
-import { UnitCost } from '../../../../shared/domain/value-objects/unit-cost.value-object';
+import { UnitCost } from '../../../../shared/value-objects/unit-cost.value-object';
 
 export type CreateBatchProps = {
   lotNumber: string;

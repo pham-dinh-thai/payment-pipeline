@@ -6,7 +6,7 @@ import { Inject } from '@nestjs/common';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import {
   ACCOUNTS_REPOSITORY,
   type IAccountsRepository,

@@ -9,7 +9,7 @@ import { Supplier } from '../../../domain/supplier.aggregate';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 
 @CommandHandler(CreateSupplierCommand)
 export class CreateSupplierHandler implements ICommandHandler<CreateSupplierCommand> {

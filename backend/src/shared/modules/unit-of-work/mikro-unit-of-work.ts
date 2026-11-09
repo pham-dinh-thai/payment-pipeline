@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from '@mikro-orm/core';
-import { IUnitOfWork } from '../../application/unit-of-work';
+import { IUnitOfWork } from './unit-of-work';
 
 @Injectable()
 export class MikroUnitOfWork implements IUnitOfWork {

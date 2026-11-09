@@ -9,7 +9,7 @@ import {
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 
 describe('CreateRoleHandler', () => {
   let handler: CreateRoleHandler;

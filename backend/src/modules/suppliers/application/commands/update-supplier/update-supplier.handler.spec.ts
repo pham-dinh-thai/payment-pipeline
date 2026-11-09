@@ -6,7 +6,7 @@ import {
 import { ISuppliersRepository } from '../../../domain/suppliers.repository';
 import { Supplier } from '../../../domain/supplier.aggregate';
 import { SupplierStatus } from '../../../domain/enums/supplier-status.enum';
-import { IUnitOfWork } from '../../../../../shared/application/unit-of-work';
+import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { UpdateSupplierCommand } from './update-supplier.command';
 import { UpdateSupplierHandler } from './update-supplier.handler';
 

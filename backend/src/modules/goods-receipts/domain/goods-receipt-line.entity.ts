@@ -2,9 +2,9 @@ import {
   ConflictException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { Id } from '../../../shared/domain/value-objects/id.value-object';
-import { Quantity } from '../../../shared/domain/value-objects/quantity.value-object';
-import { UnitCost } from '../../../shared/domain/value-objects/unit-cost.value-object';
+import { Id } from '../../../shared/value-objects/id.value-object';
+import { Quantity } from '../../../shared/value-objects/quantity.value-object';
+import { UnitCost } from '../../../shared/value-objects/unit-cost.value-object';
 
 const MAX_LOT_NUMBER_LENGTH = 50;
 

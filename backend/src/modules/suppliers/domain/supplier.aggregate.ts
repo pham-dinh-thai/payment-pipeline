@@ -1,4 +1,4 @@
-import { Id } from '../../../shared/domain/value-objects/id.value-object';
+import { Id } from '../../../shared/value-objects/id.value-object';
 import { SupplierStatus } from './enums/supplier-status.enum';
 import { SupplierCode } from './value-objects/supplier-code.value-object';
 import { SupplierPhone } from './value-objects/supplier-phone.value-object';

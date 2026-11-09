@@ -24,7 +24,7 @@ import { RenameRoleRequest } from "./requests/rename-role.request";
 import { GrantPermissionRequest } from "./requests/grant-permission.request";
 import { SetRoleSuperAdminRequest } from "./requests/set-role-super-admin.request";
 import { PermissionKey } from "../../domain/permission/permission-catalog";
-import { AuthGuard } from "../../../../shared/infrastructure/security/auth.guard";
+import { AuthGuard } from "../../../../shared/modules/security/auth.guard";
 
 @UseGuards(AuthGuard)
 @Controller("roles")

@@ -9,7 +9,7 @@ import { UpdateSupplierResponse } from './update-supplier.response';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 
 @CommandHandler(UpdateSupplierCommand)
 export class UpdateSupplierHandler implements ICommandHandler<UpdateSupplierCommand> {

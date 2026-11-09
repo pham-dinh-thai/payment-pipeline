@@ -8,7 +8,7 @@ import { ReceiveStockCommand } from '../../../../inventories/application/command
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
-} from '../../../../../shared/application/unit-of-work';
+} from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { ConfirmGoodsReceiptCommand } from './confirm-goods-receipt.command';
 
 @CommandHandler(ConfirmGoodsReceiptCommand)

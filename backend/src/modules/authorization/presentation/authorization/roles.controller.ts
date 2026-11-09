@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateRoleCommand } from '../../application/commands/create-role/create-role.command';
@@ -18,12 +19,14 @@ import { GetRoleQuery } from '../../application/queries/get-role/get-role.query'
 import { RoleReadModel } from '../../application/queries/get-role/role.read-model';
 import { ListRolesQuery } from '../../application/queries/list-roles/list-roles.query';
 import { RoleListItemReadModel } from '../../application/queries/list-roles/role-list-item.read-model';
-import { type PermissionKey } from '../../domain/permission-catalog';
 import { CreateRoleRequest } from './requests/create-role.request';
 import { RenameRoleRequest } from './requests/rename-role.request';
 import { GrantPermissionRequest } from './requests/grant-permission.request';
 import { SetRoleSuperAdminRequest } from './requests/set-role-super-admin.request';
+import { PermissionKey } from '../../domain/permission/permission-catalog';
+import { AuthGuard } from '../../../../shared/infrastructure/security/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('roles')
 export class RolesController {
   public constructor(

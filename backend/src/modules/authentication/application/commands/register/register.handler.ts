@@ -1,6 +1,5 @@
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { RegisterCommand } from './register.command';
-import { CreateCustomerCommand } from '../../../../customers/application/commands/create-customer/create-customer.command';
 import { Account } from '../../../domain/account.aggregate';
 import { Inject } from '@nestjs/common';
 import {
@@ -19,6 +18,13 @@ import {
   CREATE_CUSTOMER_PORT,
   type ICreateCustomerPort,
 } from './ports/create-customer.port';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { ACCOUNT_SIGNED_UP_EVENT } from '../../../domain/events/account-signed-up.event';
+import { accountEventPayload } from '../../../domain/events/account-event.payload';
+import { ActorType } from '../../../../audit-logs/domain/enums/actor-type.enum';
 
 @CommandHandler(RegisterCommand)
 export class RegisterHandler implements ICommandHandler<RegisterCommand> {
@@ -31,6 +37,9 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
 
     @Inject(CREATE_CUSTOMER_PORT)
     private readonly createCustomerPort: ICreateCustomerPort,
+
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: IOutboxRepository,
 
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
@@ -52,6 +61,17 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
       });
 
       await this.accountsRepository.create(account);
+
+      await this.outboxRepository.create({
+        eventType: ACCOUNT_SIGNED_UP_EVENT,
+        payload: accountEventPayload(account, {
+          actorId: user.id,
+          actorType: ActorType.USER,
+          actorLabel: command.email,
+          userIp: command.ip,
+          userAgent: command.userAgent,
+        }),
+      });
     });
   }
 }

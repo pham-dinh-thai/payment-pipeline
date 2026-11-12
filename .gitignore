@@ -1,1 +1,4 @@
 .env
+
+# Personal HTTP request files (may contain real credentials)
+*.http

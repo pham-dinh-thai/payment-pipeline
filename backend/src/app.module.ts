@@ -17,7 +17,6 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { UnitOfWorkModule } from './shared/modules/unit-of-work/unit-of-work.module';
-import { OutboxModule } from './shared/modules/outbox/outbox.module';
 
 @Module({
   imports: [
@@ -30,7 +29,6 @@ import { OutboxModule } from './shared/modules/outbox/outbox.module';
     MikroOrmModule.forRoot(mikroOrmConfig),
     CqrsModule.forRoot(),
     UnitOfWorkModule,
-    OutboxModule,
     InventoriesModule,
     GoodsReceiptsModule,
     SuppliersModule,

@@ -12,9 +12,14 @@ import { SetRoleSuperAdminHandler } from './application/commands/set-role-super-
 import { GetRoleHandler } from './application/queries/get-role/get-role.handler';
 import { ListRolesHandler } from './application/queries/list-roles/list-roles.handler';
 import { SecurityModule } from '../../shared/modules/security/security.module';
+import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([MikroRole]), SecurityModule],
+  imports: [
+    MikroOrmModule.forFeature([MikroRole]),
+    SecurityModule,
+    OutBoxModule,
+  ],
   controllers: [RolesController],
   providers: [
     { provide: ROLES_REPOSITORY, useClass: MikroRolesRepository },

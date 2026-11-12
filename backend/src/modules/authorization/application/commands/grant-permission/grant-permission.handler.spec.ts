@@ -11,13 +11,26 @@ import {
   type IUnitOfWork,
   UNIT_OF_WORK,
 } from '../../../../../shared/modules/unit-of-work/unit-of-work';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { Role } from '../../../domain/role.aggregate';
+
+const headers = {
+  actorId: '7d0d2c55-9a9d-4c7d-9f6a-3f7f5a1b2c3d',
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
 
 describe('GrantPermissionHandler', () => {
   let handler: GrantPermissionHandler;
   let rolesRepository: jest.Mocked<
     Pick<IRolesRepository, 'findById' | 'update'>
   >;
+  let outboxRepository: jest.Mocked<Pick<IOutboxRepository, 'create'>>;
   let unitOfWork: jest.Mocked<IUnitOfWork>;
 
   const id = '4e770b20-0ab6-494a-9bfd-e475e07c7a17';
@@ -28,6 +41,10 @@ describe('GrantPermissionHandler', () => {
       update: jest.fn(),
     } as unknown as jest.Mocked<Pick<IRolesRepository, 'findById' | 'update'>>;
 
+    outboxRepository = {
+      create: jest.fn(),
+    } as unknown as jest.Mocked<Pick<IOutboxRepository, 'create'>>;
+
     unitOfWork = {
       run: jest.fn(async (callback: () => Promise<unknown>) => callback()),
     } as unknown as jest.Mocked<IUnitOfWork>;
@@ -35,6 +52,7 @@ describe('GrantPermissionHandler', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         { provide: ROLES_REPOSITORY, useValue: rolesRepository },
+        { provide: OUTBOX_REPOSITORY, useValue: outboxRepository },
         { provide: UNIT_OF_WORK, useValue: unitOfWork },
         GrantPermissionHandler,
       ],
@@ -47,26 +65,52 @@ describe('GrantPermissionHandler', () => {
     rolesRepository.findById.mockResolvedValue(null);
 
     await expect(
-      handler.execute(new GrantPermissionCommand(id, 'orders:process')),
+      handler.execute(
+        new GrantPermissionCommand(id, 'orders:process', headers),
+      ),
     ).rejects.toThrow(NotFoundException);
 
     expect(rolesRepository.update).not.toHaveBeenCalled();
+    expect(outboxRepository.create).not.toHaveBeenCalled();
   });
 
-  it('grants the permission and persists the role', async () => {
+  it('grants the permission, persists the role and appends an event', async () => {
+    const grant = jest.fn();
+    const createdAt = new Date('2026-11-11T00:00:00.000Z');
     const role = {
-      getId: jest.fn().mockReturnValue(id),
-      grant: jest.fn(),
+      getId: () => id,
+      getName: () => 'manager',
+      getPermissions: () => ['orders:process'],
+      getIsSuperAdmin: () => false,
+      getCreatedAt: () => createdAt,
+      grant,
     } as unknown as Role;
 
     rolesRepository.findById.mockResolvedValue(role);
 
     const result = await handler.execute(
-      new GrantPermissionCommand(id, 'orders:process'),
+      new GrantPermissionCommand(id, 'orders:process', headers),
     );
 
-    expect(role.grant).toHaveBeenCalledWith('orders:process');
+    expect(grant).toHaveBeenCalledWith('orders:process');
     expect(rolesRepository.update).toHaveBeenCalledWith(role);
+    expect(outboxRepository.create.mock.calls).toEqual([
+      [
+        {
+          eventType: 'role.permission_granted',
+          payload: {
+            headers,
+            role: {
+              id,
+              name: 'manager',
+              permissions: ['orders:process'],
+              isSuperAdmin: false,
+              createdAt: createdAt.toISOString(),
+            },
+          },
+        },
+      ],
+    ]);
     expect(result).toEqual({ id });
   });
 });

@@ -9,12 +9,21 @@ import {
   UNIT_OF_WORK,
 } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { SetRoleSuperAdminCommand } from './set-role-super-admin.command';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { SUPER_ADMIN_SET_EVENT } from '../../../domain/events/super-admin-set.event';
+import { roleEventPayload } from '../../../domain/events/role-event.payload';
 
 @CommandHandler(SetRoleSuperAdminCommand)
 export class SetRoleSuperAdminHandler implements ICommandHandler<SetRoleSuperAdminCommand> {
   public constructor(
     @Inject(ROLES_REPOSITORY)
     private readonly rolesRepository: IRolesRepository,
+
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: IOutboxRepository,
 
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
@@ -37,6 +46,11 @@ export class SetRoleSuperAdminHandler implements ICommandHandler<SetRoleSuperAdm
       }
 
       await this.rolesRepository.update(role);
+
+      await this.outboxRepository.create({
+        eventType: SUPER_ADMIN_SET_EVENT,
+        payload: roleEventPayload(role, command.headers),
+      });
 
       return { id: role.getId() };
     });

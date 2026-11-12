@@ -1,24 +1,18 @@
-import { Global, Module } from '@nestjs/common';
 import { MikroOrmModule } from '@mikro-orm/nestjs';
-import { MikroOutboxEvent } from './entities/mikro-outbox-event.entity';
-import { OutboxConsumerRegistry } from './outbox-consumer.registry';
-import { OutboxRelay } from './outbox-relay';
-import { OutboxWriter } from './outbox-writer';
-import { MikroOutboxRepository } from './repositories/mikro-outbox.repository';
-import { OUTBOX_REPOSITORY } from './repositories/outbox.repository';
+import { Module } from '@nestjs/common';
+import { MikroOutBoxEvent } from './infrastructure/mikro-outbox-event.entity';
+import { OUTBOX_REPOSITORY } from './domain/outbox.repository';
+import { MikroOutBoxRepository } from './infrastructure/mikro-outbox.repository';
+import { OutboxConsumerRegistry } from './application/outbox-consumer.registry';
+import { OutboxRelay } from './application/outbox-relay.service';
 
-@Global()
 @Module({
-  imports: [MikroOrmModule.forFeature([MikroOutboxEvent])],
+  imports: [MikroOrmModule.forFeature([MikroOutBoxEvent])],
   providers: [
-    OutboxWriter,
+    { provide: OUTBOX_REPOSITORY, useClass: MikroOutBoxRepository },
     OutboxConsumerRegistry,
     OutboxRelay,
-    {
-      provide: OUTBOX_REPOSITORY,
-      useClass: MikroOutboxRepository,
-    },
   ],
-  exports: [OutboxWriter, OutboxConsumerRegistry],
+  exports: [OUTBOX_REPOSITORY, OutboxConsumerRegistry],
 })
-export class OutboxModule {}
+export class OutBoxModule {}

@@ -9,12 +9,21 @@ import {
   UNIT_OF_WORK,
 } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { RenameRoleCommand } from './rename-role.command';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { ROLE_RENAMED_EVENT } from '../../../domain/events/role-renamed.event';
+import { roleEventPayload } from '../../../domain/events/role-event.payload';
 
 @CommandHandler(RenameRoleCommand)
 export class RenameRoleHandler implements ICommandHandler<RenameRoleCommand> {
   public constructor(
     @Inject(ROLES_REPOSITORY)
     private readonly rolesRepository: IRolesRepository,
+
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: IOutboxRepository,
 
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
@@ -31,6 +40,11 @@ export class RenameRoleHandler implements ICommandHandler<RenameRoleCommand> {
       role.rename(command.name);
 
       await this.rolesRepository.update(role);
+
+      await this.outboxRepository.create({
+        eventType: ROLE_RENAMED_EVENT,
+        payload: roleEventPayload(role, command.headers),
+      });
 
       return { id: role.getId() };
     });

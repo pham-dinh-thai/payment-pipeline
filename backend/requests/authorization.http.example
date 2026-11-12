@@ -1,5 +1,5 @@
 @BASE_URL=http://localhost:3000/api
-@ROLE_ID=d23dd497-6e0d-41dd-935f-92f08e7e3772
+@ROLE_ID=replace-with-role-id
 
 ### Login (run this first to obtain an access token)
 # @name login
@@ -7,8 +7,8 @@ POST {{BASE_URL}}/authentication/login
 Content-Type: application/json
 
 {
-  "email": "phamdinhthai123@example.com",
-  "password": "phamdinhthai123"
+  "email": "you@example.com",
+  "password": "your-password"
 }
 
 ### Access token from the login response above
@@ -30,7 +30,7 @@ Content-Type: application/json
 Authorization: Bearer {{ACCESS_TOKEN}}
 
 {
-  "name": "manager",
+  "name": "staff",
   "permissions": ["orders:read", "orders:process", "reports:view_sales"],
   "isSuperAdmin": false
 }

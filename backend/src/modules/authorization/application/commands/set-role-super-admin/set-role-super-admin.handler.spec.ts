@@ -11,22 +11,57 @@ import {
   type IUnitOfWork,
   UNIT_OF_WORK,
 } from '../../../../../shared/modules/unit-of-work/unit-of-work';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { Role } from '../../../domain/role.aggregate';
+
+const headers = {
+  actorId: '7d0d2c55-9a9d-4c7d-9f6a-3f7f5a1b2c3d',
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
+
+const createdAt = new Date('2026-11-11T00:00:00.000Z');
 
 describe('SetRoleSuperAdminHandler', () => {
   let handler: SetRoleSuperAdminHandler;
   let rolesRepository: jest.Mocked<
     Pick<IRolesRepository, 'findById' | 'update'>
   >;
+  let outboxRepository: jest.Mocked<Pick<IOutboxRepository, 'create'>>;
   let unitOfWork: jest.Mocked<IUnitOfWork>;
 
   const id = '4e770b20-0ab6-494a-9bfd-e475e07c7a17';
+
+  const roleWith = (isSuperAdmin: boolean) => {
+    const promoteToSuperAdmin = jest.fn();
+    const demoteFromSuperAdmin = jest.fn();
+    const role = {
+      getId: () => id,
+      getName: () => 'admin',
+      getPermissions: () => [],
+      getIsSuperAdmin: () => isSuperAdmin,
+      getCreatedAt: () => createdAt,
+      promoteToSuperAdmin,
+      demoteFromSuperAdmin,
+    } as unknown as Role;
+
+    return { role, promoteToSuperAdmin, demoteFromSuperAdmin };
+  };
 
   beforeEach(async () => {
     rolesRepository = {
       findById: jest.fn(),
       update: jest.fn(),
     } as unknown as jest.Mocked<Pick<IRolesRepository, 'findById' | 'update'>>;
+
+    outboxRepository = {
+      create: jest.fn(),
+    } as unknown as jest.Mocked<Pick<IOutboxRepository, 'create'>>;
 
     unitOfWork = {
       run: jest.fn(async (callback: () => Promise<unknown>) => callback()),
@@ -35,6 +70,7 @@ describe('SetRoleSuperAdminHandler', () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
         { provide: ROLES_REPOSITORY, useValue: rolesRepository },
+        { provide: OUTBOX_REPOSITORY, useValue: outboxRepository },
         { provide: UNIT_OF_WORK, useValue: unitOfWork },
         SetRoleSuperAdminHandler,
       ],
@@ -47,43 +83,68 @@ describe('SetRoleSuperAdminHandler', () => {
     rolesRepository.findById.mockResolvedValue(null);
 
     await expect(
-      handler.execute(new SetRoleSuperAdminCommand(id, true)),
+      handler.execute(new SetRoleSuperAdminCommand(id, true, headers)),
     ).rejects.toThrow(NotFoundException);
 
     expect(rolesRepository.update).not.toHaveBeenCalled();
+    expect(outboxRepository.create).not.toHaveBeenCalled();
   });
 
-  it('promotes the role when isSuperAdmin is true', async () => {
-    const role = {
-      getId: jest.fn().mockReturnValue(id),
-      promoteToSuperAdmin: jest.fn(),
-      demoteFromSuperAdmin: jest.fn(),
-    } as unknown as Role;
-
+  it('promotes the role and appends an event', async () => {
+    const { role, promoteToSuperAdmin, demoteFromSuperAdmin } = roleWith(true);
     rolesRepository.findById.mockResolvedValue(role);
 
     const result = await handler.execute(
-      new SetRoleSuperAdminCommand(id, true),
+      new SetRoleSuperAdminCommand(id, true, headers),
     );
 
-    expect(role.promoteToSuperAdmin).toHaveBeenCalledTimes(1);
-    expect(role.demoteFromSuperAdmin).not.toHaveBeenCalled();
+    expect(promoteToSuperAdmin).toHaveBeenCalledTimes(1);
+    expect(demoteFromSuperAdmin).not.toHaveBeenCalled();
     expect(rolesRepository.update).toHaveBeenCalledWith(role);
+    expect(outboxRepository.create.mock.calls).toEqual([
+      [
+        {
+          eventType: 'role.super_admin_set',
+          payload: {
+            headers,
+            role: {
+              id,
+              name: 'admin',
+              permissions: [],
+              isSuperAdmin: true,
+              createdAt: createdAt.toISOString(),
+            },
+          },
+        },
+      ],
+    ]);
     expect(result).toEqual({ id });
   });
 
-  it('demotes the role when isSuperAdmin is false', async () => {
-    const role = {
-      getId: jest.fn().mockReturnValue(id),
-      promoteToSuperAdmin: jest.fn(),
-      demoteFromSuperAdmin: jest.fn(),
-    } as unknown as Role;
-
+  it('demotes the role and appends an event', async () => {
+    const { role, promoteToSuperAdmin, demoteFromSuperAdmin } = roleWith(false);
     rolesRepository.findById.mockResolvedValue(role);
 
-    await handler.execute(new SetRoleSuperAdminCommand(id, false));
+    await handler.execute(new SetRoleSuperAdminCommand(id, false, headers));
 
-    expect(role.demoteFromSuperAdmin).toHaveBeenCalledTimes(1);
-    expect(role.promoteToSuperAdmin).not.toHaveBeenCalled();
+    expect(demoteFromSuperAdmin).toHaveBeenCalledTimes(1);
+    expect(promoteToSuperAdmin).not.toHaveBeenCalled();
+    expect(outboxRepository.create.mock.calls).toEqual([
+      [
+        {
+          eventType: 'role.super_admin_set',
+          payload: {
+            headers,
+            role: {
+              id,
+              name: 'admin',
+              permissions: [],
+              isSuperAdmin: false,
+              createdAt: createdAt.toISOString(),
+            },
+          },
+        },
+      ],
+    ]);
   });
 });

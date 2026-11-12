@@ -1,8 +1,10 @@
 import {
   Body,
   Controller,
+  Headers,
   HttpCode,
   HttpStatus,
+  Ip,
   Post,
   Req,
   Res,
@@ -16,6 +18,8 @@ import { LoginCommand } from '../../application/commands/login/login.command';
 import { RefreshTokenCommand } from '../../application/commands/refresh-token/refresh-token.command';
 import { type Request, type Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
+import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 const REFRESH_COOKIE = 'refresh_token';
 const REFRESH_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
@@ -38,13 +42,19 @@ export class AuthenticationController {
   }
 
   @Post('/register')
-  public async register(@Body() request: RegisterRequest): Promise<void> {
+  public async register(
+    @Body() request: RegisterRequest,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent: string,
+  ): Promise<void> {
     return await this.commandBus.execute(
       new RegisterCommand(
         request.firstName,
         request.lastName,
         request.email,
         request.password,
+        ip,
+        userAgent,
       ),
     );
   }
@@ -54,11 +64,15 @@ export class AuthenticationController {
   public async login(
     @Body() request: LoginRequest,
     @Res({ passthrough: true }) res: Response,
+    @Ip() ip: string,
+    @Headers('user-agent') userAgent: string,
   ): Promise<{ accessToken: string }> {
     const { accessToken, refreshToken } = await this.commandBus.execute(
-      new LoginCommand(request.email, request.password),
+      new LoginCommand(request.email, request.password, ip, userAgent),
     );
+
     this.setRefreshCookie(res, refreshToken);
+
     return { accessToken };
   }
 

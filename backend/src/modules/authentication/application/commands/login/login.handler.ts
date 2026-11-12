@@ -19,6 +19,13 @@ import {
   type IRefreshTokenStorePort,
   REFRESH_TOKEN_STORE_PORT,
 } from '../../ports/refresh-token-store.port';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { ACCOUNT_SIGNED_IN_EVENT } from '../../../domain/events/account-signed-in.event';
+import { accountEventPayload } from '../../../domain/events/account-event.payload';
+import { ActorType } from '../../../../audit-logs/domain/enums/actor-type.enum';
 
 @CommandHandler(LoginCommand)
 export class LoginHandler implements ICommandHandler<LoginCommand> {
@@ -39,6 +46,9 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
     @Inject(REFRESH_TOKEN_STORE_PORT)
     private readonly refreshTokenStorePort: IRefreshTokenStorePort,
+
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: IOutboxRepository,
   ) {}
 
   public async execute(
@@ -82,6 +92,17 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
       refreshToken,
       7 * 24 * 60 * 60,
     );
+
+    await this.outboxRepository.create({
+      eventType: ACCOUNT_SIGNED_IN_EVENT,
+      payload: accountEventPayload(account, {
+        actorId: sub,
+        actorType: ActorType.USER,
+        actorLabel: user.email,
+        userIp: command.ip,
+        userAgent: command.userAgent,
+      }),
+    });
 
     return { accessToken, refreshToken };
   }

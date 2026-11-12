@@ -7,6 +7,8 @@ export class LoginCommand extends Command<{
   public constructor(
     public readonly email: string,
     public readonly password: string,
+    public readonly ip: string,
+    public readonly userAgent: string,
   ) {
     super();
   }

@@ -14,6 +14,9 @@ import { PERMISSION_GRANTED_EVENT } from '../../../authorization/domain/events/p
 import { ROLE_RENAMED_EVENT } from '../../../authorization/domain/events/role-renamed.event';
 import { ROLE_REVOKED_EVENT } from '../../../authorization/domain/events/role-revoked.event';
 import { SUPER_ADMIN_SET_EVENT } from '../../../authorization/domain/events/super-admin-set.event';
+import { ACCOUNT_SIGNED_UP_EVENT } from '../../../authentication/domain/events/account-signed-up.event';
+import { AccountEventPayload } from '../../../authentication/domain/events/account-event.payload';
+import { ACCOUNT_SIGNED_IN_EVENT } from '../../../authentication/domain/events/account-signed-in.event';
 
 @Injectable()
 export class AuditLogConsumer implements OutboxConsumer, OnModuleInit {
@@ -24,6 +27,8 @@ export class AuditLogConsumer implements OutboxConsumer, OnModuleInit {
     [ROLE_RENAMED_EVENT, roleAudit(ROLE_RENAMED_EVENT)],
     [ROLE_REVOKED_EVENT, roleAudit(ROLE_REVOKED_EVENT)],
     [SUPER_ADMIN_SET_EVENT, roleAudit(SUPER_ADMIN_SET_EVENT)],
+    [ACCOUNT_SIGNED_UP_EVENT, accountAudit(ACCOUNT_SIGNED_UP_EVENT)],
+    [ACCOUNT_SIGNED_IN_EVENT, accountAudit(ACCOUNT_SIGNED_IN_EVENT)],
   ]);
 
   public constructor(
@@ -76,6 +81,31 @@ const roleAudit =
         name: role.name,
         permissions: role.permissions,
         isSuperAdmin: role.isSuperAdmin,
+      },
+      metadata: { sourceEventId: event.id },
+      ipAddress: headers.userIp,
+      userAgent: headers.userAgent,
+    };
+  };
+
+const accountAudit =
+  (action: string): AuditMapper =>
+  (payload, event) => {
+    const { headers, account } = payload as AccountEventPayload;
+
+    return {
+      occurredAt: event.createdAt,
+      actorId: headers.actorId,
+      actorType:
+        headers.actorType === 'user' ? ActorType.USER : ActorType.SYSTEM,
+      actorLabel: headers.actorLabel,
+      action,
+      entityType: EntityType.ACCOUNTS,
+      entityId: account.id,
+      status: AuditStatus.SUCCESS,
+      after: {
+        id: account.id,
+        userId: account.userId,
       },
       metadata: { sourceEventId: event.id },
       ipAddress: headers.userIp,

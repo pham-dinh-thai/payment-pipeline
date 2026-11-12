@@ -22,9 +22,14 @@ import { RefreshTokenHandler } from './application/commands/refresh-token/refres
 import { GET_USER_BY_ID_PORT } from './application/commands/refresh-token/ports/get-user-by-id-port';
 import { GetUserByIdAdapter } from './infrastructure/adapters/get-user-by-id.adapter';
 import { SecurityModule } from '../../shared/modules/security/security.module';
+import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([MikroAccount]), SecurityModule],
+  imports: [
+    MikroOrmModule.forFeature([MikroAccount]),
+    SecurityModule,
+    OutBoxModule,
+  ],
   providers: [
     { provide: ACCOUNTS_REPOSITORY, useClass: MikroAccountsRepository },
     { provide: CREATE_USER_PORT, useClass: CreateUserAdapter },

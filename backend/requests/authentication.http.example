@@ -7,8 +7,8 @@ Content-Type: application/json
 {
   "firstName": "Thai",
   "lastName": "Thai",
-  "email": "phamdinhthai123@example.com",
-  "password": "phamdinhthai123"
+  "email": "you@example.com",
+  "password": "your-password"
 }
 
 ### Login (returns accessToken in the body, refresh token in a cookie)
@@ -17,8 +17,8 @@ POST {{BASE_URL}}/login
 Content-Type: application/json
 
 {
-  "email": "phamdinhthai123@example.com",
-  "password": "phamdinhthai123"
+  "email": "you@example.com",
+  "password": "your-password"
 }
 
 ### Refresh (uses the httpOnly refresh_token cookie set by login)

@@ -1,6 +1,6 @@
 @BASE_URL=http://localhost:3000/api/users
-@USER_ID=69847b83-f448-40d4-9942-3d3dfa0d6acb
-@ROLE_ID=d23dd497-6e0d-41dd-935f-92f08e7e3772
+@USER_ID=replace-with-user-id
+@ROLE_ID=replace-with-role-id
 
 ### Create
 POST {{BASE_URL}}

@@ -9,12 +9,21 @@ import {
   UNIT_OF_WORK,
 } from '../../../../../shared/modules/unit-of-work/unit-of-work';
 import { RevokePermissionCommand } from './revoke-permission.command';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { ROLE_REVOKED_EVENT } from '../../../domain/events/role-revoked.event';
+import { roleEventPayload } from '../../../domain/events/role-event.payload';
 
 @CommandHandler(RevokePermissionCommand)
 export class RevokePermissionHandler implements ICommandHandler<RevokePermissionCommand> {
   public constructor(
     @Inject(ROLES_REPOSITORY)
     private readonly rolesRepository: IRolesRepository,
+
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: IOutboxRepository,
 
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
@@ -33,6 +42,11 @@ export class RevokePermissionHandler implements ICommandHandler<RevokePermission
       role.revoke(command.permission);
 
       await this.rolesRepository.update(role);
+
+      await this.outboxRepository.create({
+        eventType: ROLE_REVOKED_EVENT,
+        payload: roleEventPayload(role, command.headers),
+      });
 
       return { id: role.getId() };
     });

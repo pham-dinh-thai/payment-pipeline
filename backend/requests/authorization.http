@@ -30,7 +30,7 @@ Content-Type: application/json
 Authorization: Bearer {{ACCESS_TOKEN}}
 
 {
-  "name": "manager",
+  "name": "admin",
   "permissions": ["orders:read", "orders:process", "reports:view_sales"],
   "isSuperAdmin": false
 }

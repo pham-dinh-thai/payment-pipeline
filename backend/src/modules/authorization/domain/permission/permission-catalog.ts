@@ -4,6 +4,11 @@ export const PERMISSIONS = {
   customers: ['create', 'read', 'update', 'delete'],
   roles: ['create', 'read', 'update', 'delete'],
   orders: ['read', 'process', 'cancel', 'refund'],
+  products: ['read', 'create', 'update', 'delete'],
+  suppliers: ['read', 'create', 'update', 'delete'],
+  goods_receipts: ['read', 'create', 'confirm', 'cancel'],
+  inventories: ['read', 'issue', 'reconcile'],
+  audit_logs: ['read'],
   reports: ['view_sales', 'view_inventory', 'export'],
 } as const;
 
@@ -22,7 +27,7 @@ export type ManagePermissionKey = `${Resource}:${typeof MANAGE_ACTION}`;
 export type PermissionKey = ConcretePermissionKey | ManagePermissionKey;
 
 export function isResource(value: string): value is Resource {
-  return Object.prototype.hasOwnProperty.call(PERMISSIONS, value);
+  return Object.keys(PERMISSIONS).includes(value);
 }
 
 export function isActionAllowed(resource: Resource, action: string): boolean {

@@ -15,6 +15,7 @@ import { CreateUserService } from './application/services/create-user.service';
 import { CreateUserByAdminHandler } from './application/commands/create-user-by-admin/create-user-by-admin.handler';
 import { SecurityModule } from '../../shared/modules/security/security.module';
 import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
+import { GetUserRoleIdsHandler } from './application/queries/get-user-role-ids/get-user-role-ids.handler';
 
 @Module({
   controllers: [UsersController],
@@ -34,6 +35,7 @@ import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
     GetUserByIdHandler,
     AssignRoleHandler,
     RemoveRoleHandler,
+    GetUserRoleIdsHandler,
   ],
 })
 export class UsersModule {}

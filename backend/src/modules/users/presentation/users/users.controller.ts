@@ -19,17 +19,20 @@ import { AssignRoleCommand } from '../../application/commands/assign-role/assign
 import { RemoveRoleCommand } from '../../application/commands/remove-role/remove-role.command';
 import { AssignRoleRequest } from './requests/assign-role.request';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
+import { RequirePermissions } from '../../../../shared/modules/security/require-permissions.decorator';
 import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
 import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 @Controller('users')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionsGuard)
 export class UsersController {
   private readonly logger = new Logger(UsersController.name);
 
   public constructor(private readonly commandBus: CommandBus) {}
 
   @Post()
+  @RequirePermissions(['users:create'])
   public async create(
     @Body() request: CreateUserRequest,
     @ActorContext() headers: ActorHeaders,
@@ -49,6 +52,7 @@ export class UsersController {
   }
 
   @Patch(':id/email')
+  @RequirePermissions(['users:update'])
   public async changeEmail(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() request: ChangeUserEmailRequest,
@@ -64,6 +68,7 @@ export class UsersController {
   }
 
   @Post(':id/roles')
+  @RequirePermissions(['users:update'])
   public assignRole(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() request: AssignRoleRequest,
@@ -75,6 +80,7 @@ export class UsersController {
   }
 
   @Delete(':id/roles/:roleId')
+  @RequirePermissions(['users:update'])
   public removeRole(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Param('roleId', new ParseUUIDPipe({ version: '4' })) roleId: string,

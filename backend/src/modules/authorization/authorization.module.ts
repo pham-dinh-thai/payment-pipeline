@@ -13,6 +13,7 @@ import { GetRoleHandler } from './application/queries/get-role/get-role.handler'
 import { ListRolesHandler } from './application/queries/list-roles/list-roles.handler';
 import { SecurityModule } from '../../shared/modules/security/security.module';
 import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
+import { GetActorPermissionsHandler } from './application/queries/get-actor-permissions/get-actor-permissions.handler';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
     SetRoleSuperAdminHandler,
     GetRoleHandler,
     ListRolesHandler,
+    GetActorPermissionsHandler,
   ],
   exports: [ROLES_REPOSITORY],
 })

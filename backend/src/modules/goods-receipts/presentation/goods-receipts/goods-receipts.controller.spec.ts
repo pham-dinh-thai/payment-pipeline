@@ -7,6 +7,7 @@ import { ConfirmGoodsReceiptCommand } from '../../application/commands/confirm-g
 import { CancelGoodsReceiptCommand } from '../../application/commands/cancel-goods-receipt/cancel-goods-receipt.command';
 import { CreateGoodsReceiptRequest } from './requests/create-goods-receipt.request';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
 
 const RECEIPT_ID = 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c';
 const SUPPLIER_ID = '0ca741a6-ce41-4010-8148-f7b2a32aef1c';
@@ -49,6 +50,8 @@ describe('GoodsReceiptsController', () => {
       providers: [{ provide: CommandBus, useValue: { execute } }],
     })
       .overrideGuard(AuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(PermissionsGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

@@ -5,10 +5,13 @@ import { CreateProductCommand } from '../../application/commands/create-product/
 import { GetProductsQuery } from '../../application/queries/get-products/get-products.query';
 import { ProductListItemReadModel } from '../../application/queries/get-products/product-list-item.read-model';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
+import { RequirePermissions } from '../../../../shared/modules/security/require-permissions.decorator';
 import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
 import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 @Controller('products')
+@UseGuards(AuthGuard, PermissionsGuard)
 export class ProductsController {
   private readonly logger = new Logger(ProductsController.name);
 
@@ -18,12 +21,13 @@ export class ProductsController {
   ) {}
 
   @Get()
+  @RequirePermissions(['products:read'])
   public async findAll(): Promise<ProductListItemReadModel[]> {
     return this.queryBus.execute(new GetProductsQuery());
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['products:create'])
   public async create(
     @Body() request: CreateProductRequest,
     @ActorContext() headers: ActorHeaders,

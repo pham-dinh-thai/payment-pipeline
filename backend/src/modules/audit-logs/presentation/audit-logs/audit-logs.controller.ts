@@ -8,18 +8,21 @@ import {
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
+import { RequirePermissions } from '../../../../shared/modules/security/require-permissions.decorator';
 import { GetAuditLogQuery } from '../../application/queries/get-audit-log/get-audit-log.query';
 import { AuditLogReadModel } from '../../application/queries/get-audit-log/audit-log.read-model';
 import { ListAuditLogsQuery } from '../../application/queries/list-audit-logs/list-audit-logs.query';
 import { AuditLogPageReadModel } from '../../application/queries/list-audit-logs/audit-log-page.read-model';
 import { ListAuditLogsRequest } from './requests/list-audit-logs.request';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, PermissionsGuard)
 @Controller('audit-logs')
 export class AuditLogsController {
   public constructor(private readonly queryBus: QueryBus) {}
 
   @Get()
+  @RequirePermissions(['audit_logs:read'])
   public findAll(
     @Query() request: ListAuditLogsRequest,
   ): Promise<AuditLogPageReadModel> {
@@ -40,6 +43,7 @@ export class AuditLogsController {
   }
 
   @Get(':id')
+  @RequirePermissions(['audit_logs:read'])
   public findOne(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
   ): Promise<AuditLogReadModel> {

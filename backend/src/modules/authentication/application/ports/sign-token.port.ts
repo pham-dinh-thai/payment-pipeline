@@ -1,7 +1,6 @@
 export type AccessTokenPayload = {
   sub: string;
   email: string;
-  roleIds: string[];
 };
 
 export type RefreshTokenPayload = {

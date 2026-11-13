@@ -21,29 +21,63 @@ import { INVENTORY_STOCK_ISSUED_EVENT } from '../../../inventories/domain/events
 import { INVENTORY_STOCK_RECONCILED_EVENT } from '../../../inventories/domain/events/inventory-stock-reconciled.event';
 
 /**
- * Event types persisted as audit rows. Adding an audited event only requires
- * one line here; the consumer itself is generic.
+ * Verbs stored in `audit_logs.action`. The outbox event type identifies the
+ * message and its consumer; the action describes what the actor did.
  */
-export const AUDITED_EVENT_TYPES: readonly string[] = [
-  ROLE_CREATED_EVENT,
-  PERMISSION_GRANTED_EVENT,
-  ROLE_RENAMED_EVENT,
-  ROLE_REVOKED_EVENT,
-  SUPER_ADMIN_SET_EVENT,
-  ACCOUNT_SIGNED_UP_EVENT,
-  ACCOUNT_SIGNED_IN_EVENT,
-  USER_CREATED_EVENT,
-  USER_EMAIL_CHANGED_EVENT,
-  USER_ROLE_ASSIGNED_EVENT,
-  USER_ROLE_REMOVED_EVENT,
-  PRODUCT_CREATED_EVENT,
-  SUPPLIER_CREATED_EVENT,
-  SUPPLIER_UPDATED_EVENT,
-  SUPPLIER_ACTIVATED_EVENT,
-  SUPPLIER_DEACTIVATED_EVENT,
-  GOODS_RECEIPT_CREATED_EVENT,
-  GOODS_RECEIPT_CONFIRMED_EVENT,
-  GOODS_RECEIPT_CANCELLED_EVENT,
-  INVENTORY_STOCK_ISSUED_EVENT,
-  INVENTORY_STOCK_RECONCILED_EVENT,
-];
+export type AuditAction =
+  | 'create'
+  | 'update'
+  | 'rename'
+  | 'grant_permission'
+  | 'revoke_permission'
+  | 'set_super_admin'
+  | 'sign_up'
+  | 'sign_in'
+  | 'change_email'
+  | 'assign_role'
+  | 'remove_role'
+  | 'activate'
+  | 'deactivate'
+  | 'confirm'
+  | 'cancel'
+  | 'issue'
+  | 'reconcile';
+
+/**
+ * Event types persisted as audit rows, mapped to the action they record.
+ * Adding an audited event only requires one entry here; the consumer itself
+ * is generic.
+ */
+export const AUDITED_EVENT_ACTIONS = {
+  [ROLE_CREATED_EVENT]: 'create',
+  [PERMISSION_GRANTED_EVENT]: 'grant_permission',
+  [ROLE_RENAMED_EVENT]: 'rename',
+  [ROLE_REVOKED_EVENT]: 'revoke_permission',
+  [SUPER_ADMIN_SET_EVENT]: 'set_super_admin',
+  [ACCOUNT_SIGNED_UP_EVENT]: 'sign_up',
+  [ACCOUNT_SIGNED_IN_EVENT]: 'sign_in',
+  [USER_CREATED_EVENT]: 'create',
+  [USER_EMAIL_CHANGED_EVENT]: 'change_email',
+  [USER_ROLE_ASSIGNED_EVENT]: 'assign_role',
+  [USER_ROLE_REMOVED_EVENT]: 'remove_role',
+  [PRODUCT_CREATED_EVENT]: 'create',
+  [SUPPLIER_CREATED_EVENT]: 'create',
+  [SUPPLIER_UPDATED_EVENT]: 'update',
+  [SUPPLIER_ACTIVATED_EVENT]: 'activate',
+  [SUPPLIER_DEACTIVATED_EVENT]: 'deactivate',
+  [GOODS_RECEIPT_CREATED_EVENT]: 'create',
+  [GOODS_RECEIPT_CONFIRMED_EVENT]: 'confirm',
+  [GOODS_RECEIPT_CANCELLED_EVENT]: 'cancel',
+  [INVENTORY_STOCK_ISSUED_EVENT]: 'issue',
+  [INVENTORY_STOCK_RECONCILED_EVENT]: 'reconcile',
+} as const satisfies Record<string, AuditAction>;
+
+export type AuditedEventType = keyof typeof AUDITED_EVENT_ACTIONS;
+
+export const AUDITED_EVENT_TYPES: readonly AuditedEventType[] = Object.keys(
+  AUDITED_EVENT_ACTIONS,
+) as AuditedEventType[];
+
+export function auditActionOf(eventType: string): AuditAction | undefined {
+  return (AUDITED_EVENT_ACTIONS as Record<string, AuditAction>)[eventType];
+}

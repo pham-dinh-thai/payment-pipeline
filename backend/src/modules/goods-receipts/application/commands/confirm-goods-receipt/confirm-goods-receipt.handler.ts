@@ -1,11 +1,11 @@
 import { Inject, NotFoundException } from '@nestjs/common';
-import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import {
   type IGoodsReceiptsRepository,
   GOODS_RECEIPTS_REPOSITORY,
 } from '../../../domain/goods-receipts.repository';
-import { ReceiveStockCommand } from '../../../../inventories/application/commands/receive-stock/receive-stock.command';
 import { goodsReceiptSnapshot } from '../../../domain/goods-receipt.snapshot';
+import { type GoodsReceipt } from '../../../domain/goods-receipt.aggregate';
 import {
   type IUnitOfWork,
   UNIT_OF_WORK,
@@ -14,8 +14,13 @@ import {
   type IOutboxRepository,
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { Id } from '../../../../../shared/value-objects/id.value-object';
 import { ConfirmGoodsReceiptCommand } from './confirm-goods-receipt.command';
-import { GOODS_RECEIPT_CONFIRMED_EVENT } from '../../../domain/events/goods-receipt-confirmed.event';
+import {
+  GOODS_RECEIPT_CONFIRMED_EVENT,
+  GOODS_RECEIPT_STOCK_RECEIVED_EVENT,
+  type GoodsReceiptStockReceivedLine,
+} from '../../../domain/events/goods-receipt-confirmed.event';
 import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
 import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
@@ -24,8 +29,6 @@ export class ConfirmGoodsReceiptHandler implements ICommandHandler<ConfirmGoodsR
   public constructor(
     @Inject(GOODS_RECEIPTS_REPOSITORY)
     private readonly goodsReceiptsRepository: IGoodsReceiptsRepository,
-
-    private readonly commandBus: CommandBus,
 
     @Inject(OUTBOX_REPOSITORY)
     private readonly outboxRepository: IOutboxRepository,
@@ -49,20 +52,7 @@ export class ConfirmGoodsReceiptHandler implements ICommandHandler<ConfirmGoodsR
 
       goodsReceipt.confirm(command.confirmedBy);
 
-      for (const line of goodsReceipt.getGoodsReceiptLines()) {
-        const { batchId } = await this.commandBus.execute(
-          new ReceiveStockCommand(
-            line.getLotNumber(),
-            line.getProductId(),
-            line.getQuantity(),
-            line.getUnitCost(),
-            line.getExpiresAt(),
-            command.confirmedBy,
-          ),
-        );
-
-        goodsReceipt.attachBatch(line.getId(), batchId);
-      }
+      const stockLines = this.prepareStockLines(goodsReceipt);
 
       await this.goodsReceiptsRepository.update(goodsReceipt);
 
@@ -76,7 +66,40 @@ export class ConfirmGoodsReceiptHandler implements ICommandHandler<ConfirmGoodsR
         }),
       });
 
+      await this.outboxRepository.create({
+        eventType: GOODS_RECEIPT_STOCK_RECEIVED_EVENT,
+        payload: {
+          goodsReceiptId: goodsReceipt.getId(),
+          confirmedBy: command.confirmedBy,
+          lines: stockLines,
+        },
+      });
+
       return { id: goodsReceipt.getId() };
+    });
+  }
+
+  /**
+   * Batch ids are generated here, before the inventory consumer runs, so the
+   * goods receipt lines already reference the batches they will receive. This
+   * also makes the consumer idempotent: replaying the event inserts nothing.
+   */
+  private prepareStockLines(
+    goodsReceipt: GoodsReceipt,
+  ): GoodsReceiptStockReceivedLine[] {
+    return goodsReceipt.getGoodsReceiptLines().map((line) => {
+      const batchId = Id.generate().getValue();
+
+      goodsReceipt.attachBatch(line.getId(), batchId);
+
+      return {
+        batchId,
+        productId: line.getProductId(),
+        lotNumber: line.getLotNumber(),
+        quantity: line.getQuantity(),
+        unitCost: line.getUnitCost(),
+        expiresAt: line.getExpiresAt().toISOString(),
+      };
     });
   }
 }

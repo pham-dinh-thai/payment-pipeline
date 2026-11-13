@@ -79,7 +79,7 @@ describe('AuditLogConsumer', () => {
       actorId: 'actor-1',
       actorType: ActorType.USER,
       actorLabel: 'admin@example.com',
-      action: 'role.created',
+      action: 'create',
       entityType: EntityType.ROLES,
       entityId: 'role-1',
       status: AuditStatus.SUCCESS,

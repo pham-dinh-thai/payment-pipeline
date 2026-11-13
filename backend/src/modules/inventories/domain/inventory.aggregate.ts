@@ -3,6 +3,7 @@ import { BatchStatus } from './batch/batch-status.enum';
 import { Batch } from './batch/batch.entity';
 
 export type AddBatchProps = {
+  id?: string;
   lotNumber: string;
   productId: string;
   quantity: number;
@@ -31,6 +32,7 @@ export class Inventory {
 
   public addBatch(props: AddBatchProps): { batchId: string } {
     const batch = Batch.create({
+      id: props.id,
       lotNumber: props.lotNumber,
       productId: props.productId,
       quantity: props.quantity,

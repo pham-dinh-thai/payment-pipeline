@@ -8,6 +8,7 @@ export class ReceiveStockCommand extends Command<{ batchId: string }> {
     public readonly unitCost: string,
     public readonly expiresAt: Date,
     public readonly createdBy: string,
+    public readonly batchId?: string,
   ) {
     super();
   }

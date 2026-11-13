@@ -30,11 +30,22 @@ export class ReceiveStockHandler implements ICommandHandler<ReceiveStockCommand>
         command.productId,
       );
 
+      if (command.batchId) {
+        const existing = inventory
+          ?.getBatches()
+          .find((batch) => batch.getId() === command.batchId);
+
+        if (existing) {
+          return { batchId: existing.getId() };
+        }
+      }
+
       if (!inventory) {
         inventory = Inventory.create(command.productId);
       }
 
       const { batchId } = inventory.addBatch({
+        id: command.batchId,
         lotNumber: command.lotNumber,
         productId: command.productId,
         quantity: command.quantity,

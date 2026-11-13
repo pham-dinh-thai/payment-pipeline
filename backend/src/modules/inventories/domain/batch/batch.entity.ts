@@ -5,6 +5,7 @@ import { StockQuantity } from './value-objects/stock-quantity.value-object';
 import { UnitCost } from '../../../../shared/value-objects/unit-cost.value-object';
 
 export type CreateBatchProps = {
+  id?: string;
   lotNumber: string;
   productId: string;
   quantity: number;
@@ -45,7 +46,7 @@ export class Batch {
     const createdAt = new Date();
 
     return new Batch(
-      Id.generate(),
+      props.id ? Id.create(props.id) : Id.generate(),
       LotNumber.create(props.lotNumber),
       props.productId,
       StockQuantity.create(props.quantity),

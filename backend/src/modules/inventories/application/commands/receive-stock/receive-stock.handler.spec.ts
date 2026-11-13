@@ -37,8 +37,11 @@ const createCommand = (
     CREATED_BY,
   );
 
-const createInventory = (): Inventory => {
+const BATCH_ID = '22222222-2222-4222-8222-222222222222';
+
+const createInventory = (batchId?: string): Inventory => {
   const batch = Batch.create({
+    id: batchId,
     lotNumber: 'LOT-001',
     productId: PRODUCT_ID,
     quantity: 10,
@@ -120,5 +123,45 @@ describe('ReceiveStockHandler', () => {
     );
 
     expect(save).not.toHaveBeenCalled();
+  });
+
+  it('uses the provided batch id when creating a batch', async () => {
+    const { handler, save } = setup(null);
+
+    const result = await handler.execute(
+      new ReceiveStockCommand(
+        'LOT-001',
+        PRODUCT_ID,
+        10,
+        '2.50',
+        EXPIRES_AT,
+        CREATED_BY,
+        BATCH_ID,
+      ),
+    );
+
+    expect(result).toEqual({ batchId: BATCH_ID });
+    expect(save.mock.calls[0][0].getNewBatches()[0].getId()).toBe(BATCH_ID);
+  });
+
+  it('skips saving when the provided batch id already exists', async () => {
+    const inventory = createInventory(BATCH_ID);
+    const { handler, save } = setup(inventory);
+
+    const result = await handler.execute(
+      new ReceiveStockCommand(
+        'LOT-001',
+        PRODUCT_ID,
+        10,
+        '2.50',
+        EXPIRES_AT,
+        CREATED_BY,
+        BATCH_ID,
+      ),
+    );
+
+    expect(result).toEqual({ batchId: BATCH_ID });
+    expect(save).not.toHaveBeenCalled();
+    expect(inventory.getBatches()).toHaveLength(1);
   });
 });

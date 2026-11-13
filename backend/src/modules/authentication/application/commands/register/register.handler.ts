@@ -23,7 +23,8 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { ACCOUNT_SIGNED_UP_EVENT } from '../../../domain/events/account-signed-up.event';
-import { accountEventPayload } from '../../../domain/events/account-event.payload';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 import { ActorType } from '../../../../audit-logs/domain/enums/actor-type.enum';
 
 @CommandHandler(RegisterCommand)
@@ -60,17 +61,27 @@ export class RegisterHandler implements ICommandHandler<RegisterCommand> {
         password: command.password,
       });
 
-      await this.accountsRepository.create(account);
+      this.accountsRepository.create(account);
 
       await this.outboxRepository.create({
         eventType: ACCOUNT_SIGNED_UP_EVENT,
-        payload: accountEventPayload(account, {
-          actorId: user.id,
-          actorType: ActorType.USER,
-          actorLabel: command.email,
-          userIp: command.ip,
-          userAgent: command.userAgent,
-        }),
+        payload: auditEventPayload(
+          {
+            actorId: user.id,
+            actorType: ActorType.USER,
+            actorLabel: command.email,
+            userIp: command.ip,
+            userAgent: command.userAgent,
+          },
+          {
+            entityType: EntityType.ACCOUNTS,
+            entityId: account.getId(),
+            after: {
+              accountId: account.getId(),
+              userId: account.getUserId(),
+            },
+          },
+        ),
       });
     });
   }

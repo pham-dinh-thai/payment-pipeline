@@ -1,5 +1,4 @@
 import { Command } from '@nestjs/cqrs';
-import { ActorHeaders } from '../../../../../shared/types/actor-headers';
 
 export class RegisterCommand extends Command<void> {
   public constructor(

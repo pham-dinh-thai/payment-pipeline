@@ -7,17 +7,49 @@ import {
   ISuppliersRepository,
   SUPPLIERS_REPOSITORY,
 } from '../../../domain/suppliers.repository';
+import {
+  IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { DeactivateSupplierHandler } from './deactivate-supplier.handler';
 import { jest } from '@jest/globals';
 import { DeactivateSupplierCommand } from './deactivate-supplier.command';
 import { NotFoundException } from '@nestjs/common';
 import { Supplier } from '../../../domain/supplier.aggregate';
+import { SupplierStatus } from '../../../domain/enums/supplier-status.enum';
+import { SUPPLIER_DEACTIVATED_EVENT } from '../../../domain/events/supplier-deactivated.event';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
+
+const SUPPLIER_ID = '4e770b20-0ab6-494a-9bfd-e475e07c7a17';
+
+const headers = {
+  actorId: '7d0d2c55-9a9d-4c7d-9f6a-3f7f5a1b2c3d',
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
+
+const createSupplier = () =>
+  Supplier.fromPersistent({
+    id: SUPPLIER_ID,
+    code: 'SUP-0007',
+    name: 'Công ty TNHH ABC',
+    status: SupplierStatus.ACTIVE,
+    phone: '0901234567',
+    email: 'contact@abc.vn',
+    address: '12 Nguyễn Huệ',
+    taxCode: '0312345678',
+    createdAt: new Date('2026-01-01T00:00:00Z'),
+    updatedAt: new Date('2026-01-01T00:00:00Z'),
+  });
 
 describe('DeactivateSupplierHandler', () => {
   let deactivateSupplierHandler: DeactivateSupplierHandler;
   let suppliersRepository: jest.Mocked<
     Pick<ISuppliersRepository, 'findById' | 'update'>
   >;
+  let outboxRepository: jest.Mocked<Pick<IOutboxRepository, 'create'>>;
   let unitOfWork: jest.Mocked<IUnitOfWork>;
 
   beforeEach(async () => {
@@ -26,14 +58,19 @@ describe('DeactivateSupplierHandler', () => {
       update: jest.fn(),
     };
 
+    outboxRepository = {
+      create: jest.fn(),
+    } as unknown as jest.Mocked<Pick<IOutboxRepository, 'create'>>;
+
     unitOfWork = {
       run: jest.fn((work: () => Promise<any>) => work()),
-    };
+    } as jest.Mocked<IUnitOfWork>;
 
     const suppliersModule = await Test.createTestingModule({
       providers: [
         DeactivateSupplierHandler,
         { provide: SUPPLIERS_REPOSITORY, useValue: suppliersRepository },
+        { provide: OUTBOX_REPOSITORY, useValue: outboxRepository },
         { provide: UNIT_OF_WORK, useValue: unitOfWork },
       ],
     }).compile();
@@ -43,38 +80,45 @@ describe('DeactivateSupplierHandler', () => {
 
   describe('execute', () => {
     it('Throws NotFoundException when supplier not found', async () => {
-      const id = '4e770b20-0ab6-494a-9bfd-e475e07c7a17';
-
       suppliersRepository.findById.mockResolvedValue(null);
 
       await expect(
-        deactivateSupplierHandler.execute(new DeactivateSupplierCommand(id)),
+        deactivateSupplierHandler.execute(
+          new DeactivateSupplierCommand(SUPPLIER_ID, headers),
+        ),
       ).rejects.toThrow(NotFoundException);
 
       expect(suppliersRepository.update).toHaveBeenCalledTimes(0);
+      expect(outboxRepository.create).not.toHaveBeenCalled();
     });
 
-    it('Deactivated supplier and returns id when found', async () => {
-      const id = '4e770b20-0ab6-494a-9bfd-e475e07c7a17';
-
-      const supplier = {
-        deactivate: jest.fn(),
-        getId: jest.fn().mockReturnValue(id),
-      };
-
-      suppliersRepository.findById.mockResolvedValue(
-        supplier as unknown as Supplier,
-      );
+    it('Deactivates supplier and appends an audit event', async () => {
+      const supplier = createSupplier();
+      suppliersRepository.findById.mockResolvedValue(supplier);
+      suppliersRepository.update.mockResolvedValue(supplier);
 
       const result = await deactivateSupplierHandler.execute(
-        new DeactivateSupplierCommand(id),
+        new DeactivateSupplierCommand(SUPPLIER_ID, headers),
       );
 
-      expect(suppliersRepository.findById).toHaveBeenCalledWith(id);
-      expect(supplier.deactivate).toHaveBeenCalledTimes(1);
+      expect(suppliersRepository.findById).toHaveBeenCalledWith(SUPPLIER_ID);
+      expect(supplier.isActive()).toBe(false);
       expect(suppliersRepository.update).toHaveBeenCalledWith(supplier);
       expect(suppliersRepository.update).toHaveBeenCalledTimes(1);
-      expect(result).toEqual({ id });
+      expect(result).toEqual({ id: SUPPLIER_ID });
+
+      expect(outboxRepository.create).toHaveBeenCalledWith({
+        eventType: SUPPLIER_DEACTIVATED_EVENT,
+        payload: {
+          headers,
+          audit: {
+            entityType: EntityType.SUPPLIERS,
+            entityId: SUPPLIER_ID,
+            before: { status: SupplierStatus.ACTIVE },
+            after: { status: SupplierStatus.INACTIVE },
+          },
+        },
+      });
     });
   });
 });

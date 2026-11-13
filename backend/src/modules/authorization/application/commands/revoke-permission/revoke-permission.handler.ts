@@ -14,7 +14,8 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { ROLE_REVOKED_EVENT } from '../../../domain/events/role-revoked.event';
-import { roleEventPayload } from '../../../domain/events/role-event.payload';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 @CommandHandler(RevokePermissionCommand)
 export class RevokePermissionHandler implements ICommandHandler<RevokePermissionCommand> {
@@ -39,13 +40,21 @@ export class RevokePermissionHandler implements ICommandHandler<RevokePermission
         throw new NotFoundException(`Role id ${command.id} not found`);
       }
 
+      const previousPermissions = role.getPermissions();
+
       role.revoke(command.permission);
 
       await this.rolesRepository.update(role);
 
       await this.outboxRepository.create({
         eventType: ROLE_REVOKED_EVENT,
-        payload: roleEventPayload(role, command.headers),
+        payload: auditEventPayload(command.headers, {
+          entityType: EntityType.ROLES,
+          entityId: role.getId(),
+          before: { permissions: previousPermissions },
+          after: { permissions: role.getPermissions() },
+          metadata: { permission: command.permission },
+        }),
       });
 
       return { id: role.getId() };

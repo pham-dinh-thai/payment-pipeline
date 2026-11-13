@@ -14,6 +14,7 @@ import {
   type IOutboxRepository,
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 const headers = {
   actorId: '7d0d2c55-9a9d-4c7d-9f6a-3f7f5a1b2c3d',
@@ -82,12 +83,14 @@ describe('CreateRoleHandler', () => {
         eventType: 'role.created',
         payload: {
           headers,
-          role: {
-            id: role.getId(),
-            name: 'manager',
-            permissions: ['orders:read'],
-            isSuperAdmin: false,
-            createdAt: role.getCreatedAt().toISOString(),
+          audit: {
+            entityType: EntityType.ROLES,
+            entityId: role.getId(),
+            after: {
+              name: 'manager',
+              permissions: ['orders:read'],
+              isSuperAdmin: false,
+            },
           },
         },
       },

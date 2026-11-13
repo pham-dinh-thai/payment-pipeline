@@ -7,6 +7,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { CreateSupplierCommand } from '../../application/commands/create-supplier/create-supplier.command';
@@ -18,6 +19,9 @@ import { CreateSupplierRequest } from './requests/create-supplier.request';
 import { UpdateSupplierRequest } from './requests/update-supplier.request';
 import { DeactivateSupplierCommand } from '../../application/commands/deactivate-supplier/deactivate-supplier.command';
 import { ActivateSupplierCommand } from '../../application/commands/activate-supplier/activate-supplier.command';
+import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
+import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 @Controller('suppliers')
 export class SuppliersController {
@@ -34,8 +38,10 @@ export class SuppliersController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
   public create(
     @Body() request: CreateSupplierRequest,
+    @ActorContext() headers: ActorHeaders,
   ): Promise<{ id: string }> {
     const response = this.commandBus.execute(
       new CreateSupplierCommand(
@@ -44,6 +50,7 @@ export class SuppliersController {
         request.email ?? null,
         request.address ?? null,
         request.taxCode ?? null,
+        headers,
       ),
     );
 
@@ -53,9 +60,11 @@ export class SuppliersController {
   }
 
   @Patch(':id')
+  @UseGuards(AuthGuard)
   public update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() request: UpdateSupplierRequest,
+    @ActorContext() headers: ActorHeaders,
   ): Promise<UpdateSupplierResponse> {
     const response = this.commandBus.execute(
       new UpdateSupplierCommand(
@@ -65,6 +74,7 @@ export class SuppliersController {
         request.email ?? null,
         request.address ?? null,
         request.taxCode ?? null,
+        headers,
       ),
     );
 
@@ -74,10 +84,14 @@ export class SuppliersController {
   }
 
   @Patch(':id/deactivate')
+  @UseGuards(AuthGuard)
   public deactivate(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @ActorContext() headers: ActorHeaders,
   ): Promise<{ id: string }> {
-    const response = this.commandBus.execute(new DeactivateSupplierCommand(id));
+    const response = this.commandBus.execute(
+      new DeactivateSupplierCommand(id, headers),
+    );
 
     this.logger.log(`Supplier ${id} deactivated`);
 
@@ -85,10 +99,14 @@ export class SuppliersController {
   }
 
   @Patch(':id/activate')
+  @UseGuards(AuthGuard)
   public activate(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @ActorContext() headers: ActorHeaders,
   ): Promise<{ id: string }> {
-    const response = this.commandBus.execute(new ActivateSupplierCommand(id));
+    const response = this.commandBus.execute(
+      new ActivateSupplierCommand(id, headers),
+    );
 
     this.logger.log(`Supplier ${id} activated`);
 

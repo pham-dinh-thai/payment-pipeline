@@ -9,9 +9,15 @@ import { UpdateSupplierHandler } from './application/commands/update-supplier/up
 import { GetSuppliersHandler } from './application/queries/get-suppliers/get-suppliers.handler';
 import { DeactivateSupplierHandler } from './application/commands/deactivate-supplier/deactivate-supplier.handler';
 import { ActivateSupplierHandler } from './application/commands/activate-supplier/activate-supplier.handler';
+import { SecurityModule } from '../../shared/modules/security/security.module';
+import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([MikroSupplier])],
+  imports: [
+    MikroOrmModule.forFeature([MikroSupplier]),
+    SecurityModule,
+    OutBoxModule,
+  ],
   controllers: [SuppliersController],
   providers: [
     { provide: SUPPLIERS_REPOSITORY, useClass: MikroSuppliersRepository },

@@ -14,7 +14,8 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { ROLE_CREATED_EVENT } from '../../../domain/events/role-created.event';
-import { roleEventPayload } from '../../../domain/events/role-event.payload';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 import { CreateRoleCommand } from './create-role.command';
 
 @CommandHandler(CreateRoleCommand)
@@ -40,11 +41,17 @@ export class CreateRoleHandler implements ICommandHandler<CreateRoleCommand> {
 
       await this.rolesRepository.create(role);
 
-      const payload = roleEventPayload(role, command.headers);
-
       await this.outboxRepository.create({
         eventType: ROLE_CREATED_EVENT,
-        payload,
+        payload: auditEventPayload(command.headers, {
+          entityType: EntityType.ROLES,
+          entityId: role.getId(),
+          after: {
+            name: role.getName(),
+            permissions: role.getPermissions(),
+            isSuperAdmin: role.getIsSuperAdmin(),
+          },
+        }),
       });
 
       return { id: role.getId() };

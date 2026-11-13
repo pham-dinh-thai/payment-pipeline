@@ -14,7 +14,8 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { SUPER_ADMIN_SET_EVENT } from '../../../domain/events/super-admin-set.event';
-import { roleEventPayload } from '../../../domain/events/role-event.payload';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 @CommandHandler(SetRoleSuperAdminCommand)
 export class SetRoleSuperAdminHandler implements ICommandHandler<SetRoleSuperAdminCommand> {
@@ -39,6 +40,8 @@ export class SetRoleSuperAdminHandler implements ICommandHandler<SetRoleSuperAdm
         throw new NotFoundException(`Role id ${command.id} not found`);
       }
 
+      const previousIsSuperAdmin = role.getIsSuperAdmin();
+
       if (command.isSuperAdmin) {
         role.promoteToSuperAdmin();
       } else {
@@ -49,7 +52,12 @@ export class SetRoleSuperAdminHandler implements ICommandHandler<SetRoleSuperAdm
 
       await this.outboxRepository.create({
         eventType: SUPER_ADMIN_SET_EVENT,
-        payload: roleEventPayload(role, command.headers),
+        payload: auditEventPayload(command.headers, {
+          entityType: EntityType.ROLES,
+          entityId: role.getId(),
+          before: { isSuperAdmin: previousIsSuperAdmin },
+          after: { isSuperAdmin: role.getIsSuperAdmin() },
+        }),
       });
 
       return { id: role.getId() };

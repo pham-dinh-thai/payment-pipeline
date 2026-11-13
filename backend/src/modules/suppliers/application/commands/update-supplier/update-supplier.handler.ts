@@ -10,12 +10,22 @@ import {
   type IUnitOfWork,
   UNIT_OF_WORK,
 } from '../../../../../shared/modules/unit-of-work/unit-of-work';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { SUPPLIER_UPDATED_EVENT } from '../../../domain/events/supplier-updated.event';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 @CommandHandler(UpdateSupplierCommand)
 export class UpdateSupplierHandler implements ICommandHandler<UpdateSupplierCommand> {
   public constructor(
     @Inject(SUPPLIERS_REPOSITORY)
     private readonly suppliersRepository: ISuppliersRepository,
+
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: IOutboxRepository,
 
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
@@ -31,6 +41,14 @@ export class UpdateSupplierHandler implements ICommandHandler<UpdateSupplierComm
         throw new NotFoundException(`Supplier id ${command.id} not found`);
       }
 
+      const before = {
+        name: supplier.getName(),
+        phone: supplier.getPhone(),
+        email: supplier.getEmail(),
+        address: supplier.getAddress(),
+        taxCode: supplier.getTaxCode(),
+      };
+
       supplier.update({
         name: command.name,
         phone: command.phone,
@@ -40,6 +58,22 @@ export class UpdateSupplierHandler implements ICommandHandler<UpdateSupplierComm
       });
 
       const result = await this.suppliersRepository.update(supplier);
+
+      await this.outboxRepository.create({
+        eventType: SUPPLIER_UPDATED_EVENT,
+        payload: auditEventPayload(command.headers, {
+          entityType: EntityType.SUPPLIERS,
+          entityId: result.getId(),
+          before,
+          after: {
+            name: result.getName(),
+            phone: result.getPhone(),
+            email: result.getEmail(),
+            address: result.getAddress(),
+            taxCode: result.getTaxCode(),
+          },
+        }),
+      });
 
       return new UpdateSupplierResponse(
         result.getId(),

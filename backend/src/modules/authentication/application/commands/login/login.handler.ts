@@ -10,7 +10,9 @@ import {
   type IAccountsRepository,
 } from '../../../domain/accounts.repository';
 import {
+  AccessTokenPayload,
   type ISignTokenPort,
+  RefreshTokenPayload,
   SIGN_TOKEN_PORT,
 } from '../../ports/sign-token.port';
 import { randomUUID } from 'crypto';
@@ -24,7 +26,8 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { ACCOUNT_SIGNED_IN_EVENT } from '../../../domain/events/account-signed-in.event';
-import { accountEventPayload } from '../../../domain/events/account-event.payload';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 import { ActorType } from '../../../../audit-logs/domain/enums/actor-type.enum';
 
 @CommandHandler(LoginCommand)
@@ -75,15 +78,20 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
     const sub = account.getUserId();
     const jti = randomUUID();
+
+    const accessTokenPayload: AccessTokenPayload = {
+      sub,
+      email: user.email,
+      roleIds: user.roleIds,
+    };
+    const refreshTokenPayload: RefreshTokenPayload = {
+      sub,
+      jti,
+    };
+
     const { accessToken, refreshToken } = await this.signTokenPort.sign(
-      {
-        sub,
-        email: user.email,
-      },
-      {
-        sub,
-        jti,
-      },
+      accessTokenPayload,
+      refreshTokenPayload,
     );
 
     await this.refreshTokenStorePort.save(
@@ -95,13 +103,23 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
 
     await this.outboxRepository.create({
       eventType: ACCOUNT_SIGNED_IN_EVENT,
-      payload: accountEventPayload(account, {
-        actorId: sub,
-        actorType: ActorType.USER,
-        actorLabel: user.email,
-        userIp: command.ip,
-        userAgent: command.userAgent,
-      }),
+      payload: auditEventPayload(
+        {
+          actorId: sub,
+          actorType: ActorType.USER,
+          actorLabel: user.email,
+          userIp: command.ip,
+          userAgent: command.userAgent,
+        },
+        {
+          entityType: EntityType.ACCOUNTS,
+          entityId: account.getId(),
+          after: {
+            accountId: account.getId(),
+            userId: account.getUserId(),
+          },
+        },
+      ),
     });
 
     return { accessToken, refreshToken };

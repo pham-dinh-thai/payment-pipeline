@@ -6,14 +6,16 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { CreateGoodsReceiptCommand } from '../../application/commands/create-goods-receipt/create-goods-receipt.command';
 import { ConfirmGoodsReceiptCommand } from '../../application/commands/confirm-goods-receipt/confirm-goods-receipt.command';
 import { CancelGoodsReceiptCommand } from '../../application/commands/cancel-goods-receipt/cancel-goods-receipt.command';
 import { CreateGoodsReceiptRequest } from './requests/create-goods-receipt.request';
-
-const TEMP_USER_ID = 'b7eba190-9948-4cfb-a209-94d773775774';
+import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
+import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 @Controller('goods-receipts')
 export class GoodsReceiptsController {
@@ -22,8 +24,10 @@ export class GoodsReceiptsController {
   public constructor(private readonly commandBus: CommandBus) {}
 
   @Post()
+  @UseGuards(AuthGuard)
   public create(
     @Body() request: CreateGoodsReceiptRequest,
+    @ActorContext() headers: ActorHeaders,
   ): Promise<{ id: string; code: string }> {
     const response = this.commandBus.execute(
       new CreateGoodsReceiptCommand(
@@ -35,7 +39,8 @@ export class GoodsReceiptsController {
           unitCost: line.unitCost,
           expiresAt: line.expiresAt,
         })),
-        TEMP_USER_ID,
+        headers.actorId,
+        headers,
       ),
     );
 
@@ -45,11 +50,13 @@ export class GoodsReceiptsController {
   }
 
   @Patch(':id/confirm')
+  @UseGuards(AuthGuard)
   public confirm(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @ActorContext() headers: ActorHeaders,
   ): Promise<{ id: string }> {
     const response = this.commandBus.execute(
-      new ConfirmGoodsReceiptCommand(id, TEMP_USER_ID),
+      new ConfirmGoodsReceiptCommand(id, headers.actorId, headers),
     );
 
     this.logger.log(`Goods receipt ${id} confirmed`);
@@ -58,11 +65,13 @@ export class GoodsReceiptsController {
   }
 
   @Patch(':id/cancel')
+  @UseGuards(AuthGuard)
   public cancel(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
+    @ActorContext() headers: ActorHeaders,
   ): Promise<{ id: string }> {
     const response = this.commandBus.execute(
-      new CancelGoodsReceiptCommand(id, TEMP_USER_ID),
+      new CancelGoodsReceiptCommand(id, headers.actorId, headers),
     );
 
     this.logger.log(`Goods receipt ${id} cancelled`);

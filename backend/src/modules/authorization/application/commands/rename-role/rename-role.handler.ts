@@ -14,7 +14,8 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { ROLE_RENAMED_EVENT } from '../../../domain/events/role-renamed.event';
-import { roleEventPayload } from '../../../domain/events/role-event.payload';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 @CommandHandler(RenameRoleCommand)
 export class RenameRoleHandler implements ICommandHandler<RenameRoleCommand> {
@@ -37,13 +38,20 @@ export class RenameRoleHandler implements ICommandHandler<RenameRoleCommand> {
         throw new NotFoundException(`Role id ${command.id} not found`);
       }
 
+      const previousName = role.getName();
+
       role.rename(command.name);
 
       await this.rolesRepository.update(role);
 
       await this.outboxRepository.create({
         eventType: ROLE_RENAMED_EVENT,
-        payload: roleEventPayload(role, command.headers),
+        payload: auditEventPayload(command.headers, {
+          entityType: EntityType.ROLES,
+          entityId: role.getId(),
+          before: { name: previousName },
+          after: { name: role.getName() },
+        }),
       });
 
       return { id: role.getId() };

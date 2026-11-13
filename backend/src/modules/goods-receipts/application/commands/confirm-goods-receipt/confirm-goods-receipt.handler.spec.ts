@@ -10,8 +10,11 @@ import { GoodsReceiptLine } from '../../../domain/goods-receipt-line.entity';
 import { GoodsReceiptStatus } from '../../../domain/goods-receipt-status.enum';
 import { ReceiveStockCommand } from '../../../../inventories/application/commands/receive-stock/receive-stock.command';
 import { type IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
+import { type IOutboxRepository } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { ConfirmGoodsReceiptCommand } from './confirm-goods-receipt.command';
 import { ConfirmGoodsReceiptHandler } from './confirm-goods-receipt.handler';
+import { GOODS_RECEIPT_CONFIRMED_EVENT } from '../../../domain/events/goods-receipt-confirmed.event';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 const RECEIPT_ID = 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c';
 const SUPPLIER_ID = '0ca741a6-ce41-4010-8148-f7b2a32aef1c';
@@ -20,6 +23,14 @@ const OTHER_PRODUCT_ID = '11111111-1111-4111-8111-111111111111';
 const CREATED_BY = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
 const CONFIRMED_BY = 'f1e2d3c4-b5a6-4978-8a9b-0c1d2e3f4a5b';
 const EXPIRES_AT = new Date('2030-01-01T00:00:00.000Z');
+
+const headers = {
+  actorId: CONFIRMED_BY,
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
 
 type FindById = (
   id: string,
@@ -67,6 +78,9 @@ const setup = (
   const nextSequence = jest.fn<NextSequence>(() => Promise.resolve(1));
   const execute = jest.fn<Execute>(executeImpl);
   const run = jest.fn<Run>((work) => work());
+  const outboxCreate = jest
+    .fn<IOutboxRepository['create']>()
+    .mockResolvedValue(undefined);
 
   const goodsReceiptsRepository: IGoodsReceiptsRepository = {
     nextSequence,
@@ -82,6 +96,7 @@ const setup = (
   const handler = new ConfirmGoodsReceiptHandler(
     goodsReceiptsRepository,
     commandBus,
+    { create: outboxCreate } as unknown as IOutboxRepository,
     unitOfWork,
   );
 
@@ -91,6 +106,7 @@ const setup = (
     update,
     execute,
     run,
+    outboxCreate,
   };
 };
 
@@ -101,10 +117,11 @@ describe('ConfirmGoodsReceiptHandler', () => {
 
   it('confirms the receipt and dispatches one receive-stock command per line', async () => {
     const receipt = createReceipt();
-    const { handler, findById, update, execute, run } = setup(receipt);
+    const { handler, findById, update, execute, run, outboxCreate } =
+      setup(receipt);
 
     const result = await handler.execute(
-      new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY),
+      new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY, headers),
     );
 
     expect(result).toEqual({ id: receipt.getId() });
@@ -130,6 +147,37 @@ describe('ConfirmGoodsReceiptHandler', () => {
     expect(receipt.getStatus()).toBe(GoodsReceiptStatus.CONFIRMED);
     expect(receipt.getConfirmedBy()).toBe(CONFIRMED_BY);
     expect(update).toHaveBeenCalledWith(receipt);
+
+    expect(outboxCreate).toHaveBeenCalledWith({
+      eventType: GOODS_RECEIPT_CONFIRMED_EVENT,
+      payload: {
+        headers,
+        audit: {
+          entityType: EntityType.GOODS_RECEIPTS,
+          entityId: receipt.getId(),
+          before: { status: GoodsReceiptStatus.PENDING },
+          after: {
+            code: receipt.getCode(),
+            supplierId: SUPPLIER_ID,
+            status: GoodsReceiptStatus.CONFIRMED,
+            createdBy: CREATED_BY,
+            confirmedBy: CONFIRMED_BY,
+            confirmedAt: receipt.getConfirmedAt()?.toISOString(),
+            cancelledBy: null,
+            cancelledAt: null,
+            lines: receipt.getGoodsReceiptLines().map((item) => ({
+              id: item.getId(),
+              lotNumber: item.getLotNumber(),
+              productId: item.getProductId(),
+              quantity: item.getQuantity(),
+              unitCost: item.getUnitCost(),
+              expiresAt: item.getExpiresAt().toISOString(),
+              batchId: item.getBatchId(),
+            })),
+          },
+        },
+      },
+    });
   });
 
   it('dispatches every line independently and attaches each returned batch', async () => {
@@ -139,15 +187,16 @@ describe('ConfirmGoodsReceiptHandler', () => {
       createLine({ lotNumber: 'LOT-003', productId: OTHER_PRODUCT_ID }),
     ]);
     let sequence = 0;
-    const { handler, execute } = setup(receipt, () =>
+    const { handler, execute, outboxCreate } = setup(receipt, () =>
       Promise.resolve({ batchId: `batch-${++sequence}` }),
     );
 
     await handler.execute(
-      new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY),
+      new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY, headers),
     );
 
     expect(execute).toHaveBeenCalledTimes(3);
+    expect(outboxCreate).toHaveBeenCalledTimes(1);
     expect(
       receipt.getGoodsReceiptLines().map((line) => ({
         lotNumber: line.getLotNumber(),
@@ -166,7 +215,7 @@ describe('ConfirmGoodsReceiptHandler', () => {
       createLine({ lotNumber: 'LOT-002' }),
     ]);
     let calls = 0;
-    const { handler, update } = setup(receipt, () => {
+    const { handler, update, outboxCreate } = setup(receipt, () => {
       calls += 1;
 
       return calls === 2
@@ -175,21 +224,27 @@ describe('ConfirmGoodsReceiptHandler', () => {
     });
 
     await expect(
-      handler.execute(new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY)),
+      handler.execute(
+        new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY, headers),
+      ),
     ).rejects.toThrow(ConflictException);
 
     expect(update).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
   });
 
   it('rejects an unknown receipt', async () => {
-    const { handler, execute, update } = setup(null);
+    const { handler, execute, update, outboxCreate } = setup(null);
 
     await expect(
-      handler.execute(new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY)),
+      handler.execute(
+        new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY, headers),
+      ),
     ).rejects.toThrow(NotFoundException);
 
     expect(execute).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
   });
 
   it('rejects confirming a receipt that is not pending', async () => {
@@ -197,13 +252,16 @@ describe('ConfirmGoodsReceiptHandler', () => {
 
     receipt.confirm(CREATED_BY);
 
-    const { handler, execute, update } = setup(receipt);
+    const { handler, execute, update, outboxCreate } = setup(receipt);
 
     await expect(
-      handler.execute(new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY)),
+      handler.execute(
+        new ConfirmGoodsReceiptCommand(RECEIPT_ID, CONFIRMED_BY, headers),
+      ),
     ).rejects.toThrow(ConflictException);
 
     expect(execute).not.toHaveBeenCalled();
     expect(update).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
   });
 });

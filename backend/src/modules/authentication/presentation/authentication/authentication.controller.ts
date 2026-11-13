@@ -18,8 +18,6 @@ import { LoginCommand } from '../../application/commands/login/login.command';
 import { RefreshTokenCommand } from '../../application/commands/refresh-token/refresh-token.command';
 import { type Request, type Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
-import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 const REFRESH_COOKIE = 'refresh_token';
 const REFRESH_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;

@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { CommandBus } from '@nestjs/cqrs';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
 import { CreateUserByAdminCommand } from '../../application/commands/create-user-by-admin/create-user-by-admin.command';
 import { UsersController } from './users.controller';
 
@@ -30,6 +31,8 @@ describe('UsersController', () => {
       ],
     })
       .overrideGuard(AuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(PermissionsGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

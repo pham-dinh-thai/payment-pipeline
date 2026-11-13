@@ -2,6 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { QueryBus } from '@nestjs/cqrs';
 import { Test } from '@nestjs/testing';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
 import { AuditLogReadModel } from '../../application/queries/get-audit-log/audit-log.read-model';
 import { GetAuditLogQuery } from '../../application/queries/get-audit-log/get-audit-log.query';
 import { AuditLogPageReadModel } from '../../application/queries/list-audit-logs/audit-log-page.read-model';
@@ -27,6 +28,8 @@ describe('AuditLogsController', () => {
       providers: [{ provide: QueryBus, useValue: { execute } }],
     })
       .overrideGuard(AuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(PermissionsGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

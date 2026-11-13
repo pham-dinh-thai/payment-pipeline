@@ -20,10 +20,13 @@ import { UpdateSupplierRequest } from './requests/update-supplier.request';
 import { DeactivateSupplierCommand } from '../../application/commands/deactivate-supplier/deactivate-supplier.command';
 import { ActivateSupplierCommand } from '../../application/commands/activate-supplier/activate-supplier.command';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
+import { RequirePermissions } from '../../../../shared/modules/security/require-permissions.decorator';
 import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
 import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 @Controller('suppliers')
+@UseGuards(AuthGuard, PermissionsGuard)
 export class SuppliersController {
   private readonly logger = new Logger(SuppliersController.name);
 
@@ -33,12 +36,13 @@ export class SuppliersController {
   ) {}
 
   @Get()
+  @RequirePermissions(['suppliers:read'])
   public findAll(): Promise<SupplierListItemReadModel[]> {
     return this.queryBus.execute(new GetSuppliersQuery());
   }
 
   @Post()
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['suppliers:create'])
   public create(
     @Body() request: CreateSupplierRequest,
     @ActorContext() headers: ActorHeaders,
@@ -60,7 +64,7 @@ export class SuppliersController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['suppliers:update'])
   public update(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @Body() request: UpdateSupplierRequest,
@@ -84,7 +88,7 @@ export class SuppliersController {
   }
 
   @Patch(':id/deactivate')
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['suppliers:update'])
   public deactivate(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @ActorContext() headers: ActorHeaders,
@@ -99,7 +103,7 @@ export class SuppliersController {
   }
 
   @Patch(':id/activate')
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['suppliers:update'])
   public activate(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @ActorContext() headers: ActorHeaders,

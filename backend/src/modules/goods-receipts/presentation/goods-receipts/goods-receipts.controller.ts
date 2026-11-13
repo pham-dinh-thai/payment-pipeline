@@ -14,17 +14,20 @@ import { ConfirmGoodsReceiptCommand } from '../../application/commands/confirm-g
 import { CancelGoodsReceiptCommand } from '../../application/commands/cancel-goods-receipt/cancel-goods-receipt.command';
 import { CreateGoodsReceiptRequest } from './requests/create-goods-receipt.request';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
+import { RequirePermissions } from '../../../../shared/modules/security/require-permissions.decorator';
 import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
 import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 @Controller('goods-receipts')
+@UseGuards(AuthGuard, PermissionsGuard)
 export class GoodsReceiptsController {
   private readonly logger = new Logger(GoodsReceiptsController.name);
 
   public constructor(private readonly commandBus: CommandBus) {}
 
   @Post()
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['goods_receipts:create'])
   public create(
     @Body() request: CreateGoodsReceiptRequest,
     @ActorContext() headers: ActorHeaders,
@@ -50,7 +53,7 @@ export class GoodsReceiptsController {
   }
 
   @Patch(':id/confirm')
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['goods_receipts:confirm'])
   public confirm(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @ActorContext() headers: ActorHeaders,
@@ -65,7 +68,7 @@ export class GoodsReceiptsController {
   }
 
   @Patch(':id/cancel')
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['goods_receipts:cancel'])
   public cancel(
     @Param('id', new ParseUUIDPipe({ version: '4' })) id: string,
     @ActorContext() headers: ActorHeaders,

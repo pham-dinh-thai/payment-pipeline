@@ -13,6 +13,7 @@ import { GetSuppliersQuery } from '../../application/queries/get-suppliers/get-s
 import { DeactivateSupplierCommand } from '../../application/commands/deactivate-supplier/deactivate-supplier.command';
 import { ActivateSupplierCommand } from '../../application/commands/activate-supplier/activate-supplier.command';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
 
 const SUPPLIER_ID = 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c';
 
@@ -41,6 +42,8 @@ describe('SuppliersController', () => {
       ],
     })
       .overrideGuard(AuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(PermissionsGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

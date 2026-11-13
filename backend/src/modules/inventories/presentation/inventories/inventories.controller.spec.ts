@@ -3,6 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { jest } from '@jest/globals';
 import { InventoriesController } from './inventories.controller';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
 import { IssueBatchStockCommand } from '../../application/commands/issue-batch-stock/issue-batch-stock.command';
 import { ReconcileBatchStockCommand } from '../../application/commands/reconcile-batch-stock/reconcile-batch-stock.command';
 
@@ -29,6 +30,8 @@ describe('InventoriesController', () => {
       providers: [{ provide: CommandBus, useValue: { execute } }],
     })
       .overrideGuard(AuthGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(PermissionsGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

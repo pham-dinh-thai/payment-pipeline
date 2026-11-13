@@ -13,17 +13,20 @@ import { IssueBatchStockCommand } from '../../application/commands/issue-batch-s
 import { IssueBatchStockRequest } from './requests/issue-batch-stock.request';
 import { CommandBus } from '@nestjs/cqrs';
 import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
+import { PermissionsGuard } from '../../../../shared/modules/security/permissions.guard';
+import { RequirePermissions } from '../../../../shared/modules/security/require-permissions.decorator';
 import { ActorContext } from '../../../../shared/modules/security/actor-context.decorator';
 import { type ActorHeaders } from '../../../../shared/types/actor-headers';
 
 @Controller('inventories')
+@UseGuards(AuthGuard, PermissionsGuard)
 export class InventoriesController {
   private readonly logger = new Logger(InventoriesController.name);
 
   public constructor(private readonly commandBus: CommandBus) {}
 
   @Patch(':productId/issue/:batchId')
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['inventories:issue'])
   public async issueBatchStock(
     @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
     @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,
@@ -40,7 +43,7 @@ export class InventoriesController {
   }
 
   @Patch(':productId/reconcile/:batchId')
-  @UseGuards(AuthGuard)
+  @RequirePermissions(['inventories:reconcile'])
   public async reconcileBatchStock(
     @Param('productId', new ParseUUIDPipe({ version: '4' })) productId: string,
     @Param('batchId', new ParseUUIDPipe({ version: '4' })) batchId: string,

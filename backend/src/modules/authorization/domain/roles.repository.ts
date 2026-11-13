@@ -1,3 +1,4 @@
+import { PermissionKey } from './permission/permission-catalog';
 import { Role } from './role.aggregate';
 
 export interface IRolesRepository {
@@ -6,6 +7,10 @@ export interface IRolesRepository {
   findById(id: string): Promise<Role | null>;
 
   findByName(name: string): Promise<Role | null>;
+
+  findAccessByRoleIds(
+    ids: string[],
+  ): Promise<{ isSuperAdmin: boolean; permissions: PermissionKey[] }>;
 
   create(role: Role): Promise<Role>;
 

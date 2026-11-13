@@ -11,6 +11,7 @@ import { type IRolesRepository } from '../../domain/roles.repository';
 import { Role } from '../../domain/role.aggregate';
 import { RoleMapper } from '../mappers/role.mapper';
 import { MikroRole } from '../entities/mikro-role.entity';
+import { PermissionKey } from '../../domain/permission/permission-catalog';
 
 @Injectable()
 export class MikroRolesRepository implements IRolesRepository {
@@ -34,6 +35,27 @@ export class MikroRolesRepository implements IRolesRepository {
     const mikroRole = await this.entityManager.findOne(MikroRole, { name });
 
     return mikroRole ? RoleMapper.toDomain(mikroRole) : null;
+  }
+
+  public async findAccessByRoleIds(
+    ids: string[],
+  ): Promise<{ isSuperAdmin: boolean; permissions: PermissionKey[] }> {
+    if (ids.length === 0) {
+      return { isSuperAdmin: false, permissions: [] };
+    }
+
+    const mikroRoles = await this.entityManager.find(
+      MikroRole,
+      { id: { $in: ids } },
+      { fields: ['permissions', 'isSuperAdmin'] },
+    );
+
+    const permissions = mikroRoles.flatMap((role) => role.permissions);
+
+    return {
+      isSuperAdmin: mikroRoles.some((role) => role.isSuperAdmin),
+      permissions: [...new Set(permissions)] as PermissionKey[],
+    };
   }
 
   public create(role: Role): Promise<Role> {

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthGuard } from './auth.guard';
+import { PermissionsGuard } from './permissions.guard';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { AuthGuard } from './auth.guard';
       }),
     }),
   ],
-  providers: [AuthGuard],
-  exports: [AuthGuard, JwtModule],
+  providers: [AuthGuard, PermissionsGuard],
+  exports: [AuthGuard, PermissionsGuard, JwtModule],
 })
 export class SecurityModule {}

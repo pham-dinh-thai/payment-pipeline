@@ -82,7 +82,6 @@ export class LoginHandler implements ICommandHandler<LoginCommand> {
     const accessTokenPayload: AccessTokenPayload = {
       sub,
       email: user.email,
-      roleIds: user.roleIds,
     };
     const refreshTokenPayload: RefreshTokenPayload = {
       sub,

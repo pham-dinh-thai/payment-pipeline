@@ -12,7 +12,14 @@ import {
   type IUnitOfWork,
   UNIT_OF_WORK,
 } from '../../../../../shared/modules/unit-of-work/unit-of-work';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { AssignRoleCommand } from './assign-role.command';
+import { USER_ROLE_ASSIGNED_EVENT } from '../../../domain/events/user-role-assigned.event';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 @CommandHandler(AssignRoleCommand)
 export class AssignRoleHandler implements ICommandHandler<AssignRoleCommand> {
@@ -22,6 +29,9 @@ export class AssignRoleHandler implements ICommandHandler<AssignRoleCommand> {
 
     @Inject(ROLES_REPOSITORY)
     private readonly rolesRepository: IRolesRepository,
+
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: IOutboxRepository,
 
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
@@ -43,9 +53,22 @@ export class AssignRoleHandler implements ICommandHandler<AssignRoleCommand> {
         throw new NotFoundException(`User id ${command.userId} not found`);
       }
 
+      const previousRoleIds = user.getRoleIds();
+
       user.assignRole(role.getId());
 
       await this.usersRepository.update(user);
+
+      await this.outboxRepository.create({
+        eventType: USER_ROLE_ASSIGNED_EVENT,
+        payload: auditEventPayload(command.headers, {
+          entityType: EntityType.USERS,
+          entityId: user.getId(),
+          before: { roleIds: previousRoleIds },
+          after: { roleIds: user.getRoleIds() },
+          metadata: { roleId: role.getId() },
+        }),
+      });
 
       return { id: user.getId(), roleIds: user.getRoleIds() };
     });

@@ -7,17 +7,28 @@ import {
 import { GoodsReceipt } from '../../../domain/goods-receipt.aggregate';
 import { GoodsReceiptStatus } from '../../../domain/goods-receipt-status.enum';
 import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
+import { IOutboxRepository } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import {
   CreateGoodsReceiptCommand,
   CreateGoodsReceiptLineProps,
 } from './create-goods-receipt.command';
 import { CreateGoodsReceiptHandler } from './create-goods-receipt.handler';
+import { GOODS_RECEIPT_CREATED_EVENT } from '../../../domain/events/goods-receipt-created.event';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 const SUPPLIER_ID = 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c';
 const PRODUCT_ID = '0ca741a6-ce41-4010-8148-f7b2a32aef1c';
 const OTHER_PRODUCT_ID = '8a2f6c1e-3b4d-4e5f-9a0b-1c2d3e4f5a6b';
 const CREATED_BY = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
 const EXPIRES_AT = new Date('2030-01-01T00:00:00.000Z');
+
+const headers = {
+  actorId: CREATED_BY,
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
 
 type NextSequence = () => Promise<number>;
 type FindById = (
@@ -42,7 +53,7 @@ const buildLine = (
 const createCommand = (
   lines: CreateGoodsReceiptLineProps[] = [buildLine()],
 ): CreateGoodsReceiptCommand =>
-  new CreateGoodsReceiptCommand(SUPPLIER_ID, lines, CREATED_BY);
+  new CreateGoodsReceiptCommand(SUPPLIER_ID, lines, CREATED_BY, headers);
 
 const setup = (sequence = 1) => {
   const nextSequence = jest.fn<NextSequence>(() => Promise.resolve(sequence));
@@ -50,6 +61,9 @@ const setup = (sequence = 1) => {
   const create = jest.fn<Create>((receipt) => Promise.resolve(receipt));
   const update = jest.fn<Update>((receipt) => Promise.resolve(receipt));
   const run = jest.fn<Run>((work) => work());
+  const outboxCreate = jest
+    .fn<IOutboxRepository['create']>()
+    .mockResolvedValue(undefined);
 
   const repository: IGoodsReceiptsRepository = {
     nextSequence,
@@ -60,14 +74,18 @@ const setup = (sequence = 1) => {
   const unitOfWork: IUnitOfWork = {
     run: run as unknown as IUnitOfWork['run'],
   };
-  const handler = new CreateGoodsReceiptHandler(repository, unitOfWork);
+  const handler = new CreateGoodsReceiptHandler(
+    repository,
+    { create: outboxCreate } as unknown as IOutboxRepository,
+    unitOfWork,
+  );
 
-  return { handler, nextSequence, create, run };
+  return { handler, nextSequence, create, run, outboxCreate };
 };
 
 describe('CreateGoodsReceiptHandler', () => {
   it('creates a pending receipt with a sequence-based code inside a unit of work', async () => {
-    const { handler, nextSequence, create, run } = setup(7);
+    const { handler, nextSequence, create, run, outboxCreate } = setup(7);
 
     const result = await handler.execute(createCommand());
 
@@ -90,6 +108,36 @@ describe('CreateGoodsReceiptHandler', () => {
     expect(created.getCreatedBy()).toBe(CREATED_BY);
     expect(created.getStatus()).toBe(GoodsReceiptStatus.PENDING);
     expect(created.getGoodsReceiptLines()).toHaveLength(1);
+
+    expect(outboxCreate).toHaveBeenCalledWith({
+      eventType: GOODS_RECEIPT_CREATED_EVENT,
+      payload: {
+        headers,
+        audit: {
+          entityType: EntityType.GOODS_RECEIPTS,
+          entityId: created.getId(),
+          after: {
+            code: 'GR-0007',
+            supplierId: SUPPLIER_ID,
+            status: GoodsReceiptStatus.PENDING,
+            createdBy: CREATED_BY,
+            confirmedBy: null,
+            confirmedAt: null,
+            cancelledBy: null,
+            cancelledAt: null,
+            lines: created.getGoodsReceiptLines().map((line) => ({
+              id: line.getId(),
+              lotNumber: line.getLotNumber(),
+              productId: line.getProductId(),
+              quantity: line.getQuantity(),
+              unitCost: line.getUnitCost(),
+              expiresAt: line.getExpiresAt().toISOString(),
+              batchId: null,
+            })),
+          },
+        },
+      },
+    });
   });
 
   it('normalizes lot numbers and keeps one line per product and lot', async () => {
@@ -112,22 +160,24 @@ describe('CreateGoodsReceiptHandler', () => {
   });
 
   it('rejects duplicated product and lot before saving', async () => {
-    const { handler, create } = setup();
+    const { handler, create, outboxCreate } = setup();
 
     await expect(
       handler.execute(createCommand([buildLine(), buildLine()])),
     ).rejects.toThrow(UnprocessableEntityException);
 
     expect(create).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
   });
 
   it('rejects a receipt without lines before saving', async () => {
-    const { handler, create } = setup();
+    const { handler, create, outboxCreate } = setup();
 
     await expect(handler.execute(createCommand([]))).rejects.toThrow(
       'Goods receipt must have at least one line',
     );
 
     expect(create).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
   });
 });

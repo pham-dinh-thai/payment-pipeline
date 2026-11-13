@@ -8,9 +8,15 @@ import { MikroBatch } from './infrastructure/entities/mikro-batch.entity';
 import { MikroInventory } from './infrastructure/entities/mikro-inventory.entity';
 import { ReconcileBatchStockHandler } from './application/commands/reconcile-batch-stock/reconcile-batch-stock.handler';
 import { IssueBatchStockHandler } from './application/commands/issue-batch-stock/issue-batch-stock.handler';
+import { SecurityModule } from '../../shared/modules/security/security.module';
+import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
 
 @Module({
-  imports: [MikroOrmModule.forFeature([MikroBatch, MikroInventory])],
+  imports: [
+    MikroOrmModule.forFeature([MikroBatch, MikroInventory]),
+    SecurityModule,
+    OutBoxModule,
+  ],
   controllers: [InventoriesController],
   providers: [
     { provide: INVENTORIES_REPOSITORY, useClass: MikroInventoriesRepository },

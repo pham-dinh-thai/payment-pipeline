@@ -14,7 +14,8 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { PERMISSION_GRANTED_EVENT } from '../../../domain/events/permission-granted.event';
-import { roleEventPayload } from '../../../domain/events/role-event.payload';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 @CommandHandler(GrantPermissionCommand)
 export class GrantPermissionHandler implements ICommandHandler<GrantPermissionCommand> {
@@ -39,15 +40,21 @@ export class GrantPermissionHandler implements ICommandHandler<GrantPermissionCo
         throw new NotFoundException(`Role id ${command.id} not found`);
       }
 
-      role.grant(command.permission);
+      const previousPermissions = role.getPermissions();
 
-      const payload = roleEventPayload(role, command.headers);
+      role.grant(command.permission);
 
       await this.rolesRepository.update(role);
 
       await this.outboxRepository.create({
         eventType: PERMISSION_GRANTED_EVENT,
-        payload,
+        payload: auditEventPayload(command.headers, {
+          entityType: EntityType.ROLES,
+          entityId: role.getId(),
+          before: { permissions: previousPermissions },
+          after: { permissions: role.getPermissions() },
+          metadata: { permission: command.permission },
+        }),
       });
 
       return { id: role.getId() };

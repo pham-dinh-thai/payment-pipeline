@@ -10,7 +10,7 @@ export class BatchMapper {
       quantity: mikroBatch.quantity,
       unitCost: mikroBatch.unitCost,
       status: mikroBatch.status,
-      expiresAt: mikroBatch.expiresAt,
+      expiresAt: new Date(mikroBatch.expiresAt),
       createdBy: mikroBatch.createdBy,
       createdAt: mikroBatch.createdAt,
       updatedAt: mikroBatch.updatedAt,

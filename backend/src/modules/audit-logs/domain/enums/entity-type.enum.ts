@@ -4,4 +4,8 @@ export enum EntityType {
   CUSTOMERS = 'customers',
   ROLES = 'roles',
   ORDERS = 'orders',
+  PRODUCTS = 'products',
+  SUPPLIERS = 'suppliers',
+  GOODS_RECEIPTS = 'goods_receipts',
+  INVENTORIES = 'inventories',
 }

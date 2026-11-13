@@ -63,7 +63,7 @@ export class GoodsReceiptMapper {
       productId: mikroLine.productId,
       unitCost: mikroLine.unitCost,
       quantity: mikroLine.quantity,
-      expiresAt: mikroLine.expiresAt,
+      expiresAt: new Date(mikroLine.expiresAt),
       batchId: mikroLine.batchId,
       createdAt: mikroLine.createdAt,
       updatedAt: mikroLine.updatedAt,

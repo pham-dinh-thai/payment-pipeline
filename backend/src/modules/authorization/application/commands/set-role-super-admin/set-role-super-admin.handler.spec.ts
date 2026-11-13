@@ -16,6 +16,7 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { Role } from '../../../domain/role.aggregate';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 const headers = {
   actorId: '7d0d2c55-9a9d-4c7d-9f6a-3f7f5a1b2c3d',
@@ -38,13 +39,18 @@ describe('SetRoleSuperAdminHandler', () => {
   const id = '4e770b20-0ab6-494a-9bfd-e475e07c7a17';
 
   const roleWith = (isSuperAdmin: boolean) => {
-    const promoteToSuperAdmin = jest.fn();
-    const demoteFromSuperAdmin = jest.fn();
+    let current = isSuperAdmin;
+    const promoteToSuperAdmin = jest.fn(() => {
+      current = true;
+    });
+    const demoteFromSuperAdmin = jest.fn(() => {
+      current = false;
+    });
     const role = {
       getId: () => id,
       getName: () => 'admin',
       getPermissions: () => [],
-      getIsSuperAdmin: () => isSuperAdmin,
+      getIsSuperAdmin: () => current,
       getCreatedAt: () => createdAt,
       promoteToSuperAdmin,
       demoteFromSuperAdmin,
@@ -91,7 +97,7 @@ describe('SetRoleSuperAdminHandler', () => {
   });
 
   it('promotes the role and appends an event', async () => {
-    const { role, promoteToSuperAdmin, demoteFromSuperAdmin } = roleWith(true);
+    const { role, promoteToSuperAdmin, demoteFromSuperAdmin } = roleWith(false);
     rolesRepository.findById.mockResolvedValue(role);
 
     const result = await handler.execute(
@@ -107,12 +113,11 @@ describe('SetRoleSuperAdminHandler', () => {
           eventType: 'role.super_admin_set',
           payload: {
             headers,
-            role: {
-              id,
-              name: 'admin',
-              permissions: [],
-              isSuperAdmin: true,
-              createdAt: createdAt.toISOString(),
+            audit: {
+              entityType: EntityType.ROLES,
+              entityId: id,
+              before: { isSuperAdmin: false },
+              after: { isSuperAdmin: true },
             },
           },
         },
@@ -122,7 +127,7 @@ describe('SetRoleSuperAdminHandler', () => {
   });
 
   it('demotes the role and appends an event', async () => {
-    const { role, promoteToSuperAdmin, demoteFromSuperAdmin } = roleWith(false);
+    const { role, promoteToSuperAdmin, demoteFromSuperAdmin } = roleWith(true);
     rolesRepository.findById.mockResolvedValue(role);
 
     await handler.execute(new SetRoleSuperAdminCommand(id, false, headers));
@@ -135,12 +140,11 @@ describe('SetRoleSuperAdminHandler', () => {
           eventType: 'role.super_admin_set',
           payload: {
             headers,
-            role: {
-              id,
-              name: 'admin',
-              permissions: [],
-              isSuperAdmin: false,
-              createdAt: createdAt.toISOString(),
+            audit: {
+              entityType: EntityType.ROLES,
+              entityId: id,
+              before: { isSuperAdmin: true },
+              after: { isSuperAdmin: false },
             },
           },
         },

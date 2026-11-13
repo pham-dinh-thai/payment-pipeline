@@ -1,4 +1,5 @@
 import { Command } from '@nestjs/cqrs';
+import { type ActorHeaders } from '../../../../../shared/types/actor-headers';
 import { UpdateSupplierResponse } from './update-supplier.response';
 
 export class UpdateSupplierCommand extends Command<UpdateSupplierResponse> {
@@ -9,6 +10,7 @@ export class UpdateSupplierCommand extends Command<UpdateSupplierResponse> {
     public readonly email: string | null,
     public readonly address: string | null,
     public readonly taxCode: string | null,
+    public readonly headers: ActorHeaders,
   ) {
     super();
   }

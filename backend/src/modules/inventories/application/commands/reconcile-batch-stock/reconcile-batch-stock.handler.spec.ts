@@ -11,12 +11,23 @@ import {
 } from '../../../domain/inventories.repository';
 import { Inventory } from '../../../domain/inventory.aggregate';
 import { IUnitOfWork } from '../../../../../shared/modules/unit-of-work/unit-of-work';
+import { IOutboxRepository } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { ReconcileBatchStockCommand } from './reconcile-batch-stock.command';
 import { ReconcileBatchStockHandler } from './reconcile-batch-stock.handler';
+import { INVENTORY_STOCK_RECONCILED_EVENT } from '../../../domain/events/inventory-stock-reconciled.event';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 const PRODUCT_ID = 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c';
 const CREATED_BY = 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d';
 const EXPIRES_AT = new Date('2030-01-01T00:00:00.000Z');
+
+const headers = {
+  actorId: CREATED_BY,
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
 
 type FindByProductId = (
   productId: string,
@@ -47,24 +58,32 @@ const setup = (inventory: Inventory | null) => {
   );
   const save = jest.fn<Save>((value) => Promise.resolve(value));
   const run = jest.fn<Run>((work) => work());
+  const outboxCreate = jest
+    .fn<IOutboxRepository['create']>()
+    .mockResolvedValue(undefined);
 
   const repository: IInventoriesRepository = { findByProductId, save };
   const unitOfWork: IUnitOfWork = {
     run: run as unknown as IUnitOfWork['run'],
   };
-  const handler = new ReconcileBatchStockHandler(repository, unitOfWork);
+  const handler = new ReconcileBatchStockHandler(
+    repository,
+    { create: outboxCreate } as unknown as IOutboxRepository,
+    unitOfWork,
+  );
 
-  return { handler, findByProductId, save, run };
+  return { handler, findByProductId, save, run, outboxCreate };
 };
 
 describe('ReconcileBatchStockHandler', () => {
   it('overwrites stock with counted quantity inside a unit of work', async () => {
     const inventory = createInventory(10);
     const batchId = inventory.getBatches()[0].getId();
-    const { handler, findByProductId, save, run } = setup(inventory);
+    const { handler, findByProductId, save, run, outboxCreate } =
+      setup(inventory);
 
     const result = await handler.execute(
-      new ReconcileBatchStockCommand(PRODUCT_ID, batchId, 7),
+      new ReconcileBatchStockCommand(PRODUCT_ID, batchId, 7, headers),
     );
 
     expect(result).toBe(7);
@@ -78,6 +97,28 @@ describe('ReconcileBatchStockHandler', () => {
     expect(run.mock.invocationCallOrder[0]).toBeLessThan(
       findByProductId.mock.invocationCallOrder[0],
     );
+
+    expect(outboxCreate).toHaveBeenCalledWith({
+      eventType: INVENTORY_STOCK_RECONCILED_EVENT,
+      payload: {
+        headers,
+        audit: {
+          entityType: EntityType.INVENTORIES,
+          entityId: PRODUCT_ID,
+          before: { quantity: 10 },
+          after: {
+            productId: PRODUCT_ID,
+            batchId,
+            lotNumber: 'LOT-001',
+            quantity: 7,
+            unitCost: '2.50',
+            status: BatchStatus.ACTIVE,
+            expiresAt: EXPIRES_AT.toISOString(),
+          },
+          metadata: { batchId },
+        },
+      },
+    });
   });
 
   it('accepts zero as counted quantity', async () => {
@@ -86,7 +127,7 @@ describe('ReconcileBatchStockHandler', () => {
     const { handler, save } = setup(inventory);
 
     const result = await handler.execute(
-      new ReconcileBatchStockCommand(PRODUCT_ID, batchId, 0),
+      new ReconcileBatchStockCommand(PRODUCT_ID, batchId, 0, headers),
     );
 
     expect(result).toBe(0);
@@ -95,7 +136,7 @@ describe('ReconcileBatchStockHandler', () => {
   });
 
   it('throws NotFoundException when inventory does not exist', async () => {
-    const { handler, save } = setup(null);
+    const { handler, save, outboxCreate } = setup(null);
 
     await expect(
       handler.execute(
@@ -103,23 +144,47 @@ describe('ReconcileBatchStockHandler', () => {
           PRODUCT_ID,
           'f1e2d3c4-b5a6-4978-8a9b-0c1d2e3f4a5b',
           1,
+          headers,
         ),
       ),
     ).rejects.toThrow(NotFoundException);
 
     expect(save).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
+  });
+
+  it('throws NotFoundException when the batch does not exist', async () => {
+    const inventory = createInventory(10);
+    const { handler, save, outboxCreate } = setup(inventory);
+
+    await expect(
+      handler.execute(
+        new ReconcileBatchStockCommand(
+          PRODUCT_ID,
+          'f1e2d3c4-b5a6-4978-8a9b-0c1d2e3f4a5b',
+          1,
+          headers,
+        ),
+      ),
+    ).rejects.toThrow(NotFoundException);
+
+    expect(save).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
   });
 
   it('rejects negative counted quantity and does not save', async () => {
     const inventory = createInventory(10);
     const batchId = inventory.getBatches()[0].getId();
-    const { handler, save } = setup(inventory);
+    const { handler, save, outboxCreate } = setup(inventory);
 
     await expect(
-      handler.execute(new ReconcileBatchStockCommand(PRODUCT_ID, batchId, -1)),
+      handler.execute(
+        new ReconcileBatchStockCommand(PRODUCT_ID, batchId, -1, headers),
+      ),
     ).rejects.toThrow(UnprocessableEntityException);
 
     expect(inventory.getBatches()[0].getQuantity()).toBe(10);
     expect(save).not.toHaveBeenCalled();
+    expect(outboxCreate).not.toHaveBeenCalled();
   });
 });

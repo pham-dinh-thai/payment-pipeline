@@ -1,4 +1,5 @@
 import { Command } from '@nestjs/cqrs';
+import { type ActorHeaders } from '../../../../../shared/types/actor-headers';
 
 export class AssignRoleCommand extends Command<{
   id: string;
@@ -7,6 +8,7 @@ export class AssignRoleCommand extends Command<{
   public constructor(
     public readonly userId: string,
     public readonly roleId: string,
+    public readonly headers: ActorHeaders,
   ) {
     super();
   }

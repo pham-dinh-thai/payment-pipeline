@@ -5,6 +5,14 @@ import { CreateProductCommand } from '../../application/commands/create-product/
 import { ProductsController } from './products.controller';
 import { CreateProductRequest } from './requests/create-product.request';
 
+const headers = {
+  actorId: '7d0d2c55-9a9d-4c7d-9f6a-3f7f5a1b2c3d',
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
+
 const buildRequest = (): CreateProductRequest =>
   Object.assign(new CreateProductRequest(), {
     name: 'product-1',
@@ -29,8 +37,8 @@ describe('ProductsController', () => {
     );
   });
 
-  it('dispatches CreateProductCommand and returns the created id', async () => {
-    const result = await controller.create(buildRequest());
+  it('dispatches CreateProductCommand with actor headers and returns the created id', async () => {
+    const result = await controller.create(buildRequest(), headers);
 
     expect(execute).toHaveBeenCalledTimes(1);
 
@@ -40,6 +48,7 @@ describe('ProductsController', () => {
       name: 'product-1',
       unitPrice: '2333.23',
       quantity: 100,
+      headers,
     });
 
     expect(result).toEqual({ id: 'product-1' });
@@ -49,7 +58,9 @@ describe('ProductsController', () => {
     const error = new UnprocessableEntityException('invalid product');
     execute.mockRejectedValue(error);
 
-    await expect(controller.create(buildRequest())).rejects.toBe(error);
+    await expect(controller.create(buildRequest(), headers)).rejects.toBe(
+      error,
+    );
 
     expect(execute).toHaveBeenCalledTimes(1);
   });

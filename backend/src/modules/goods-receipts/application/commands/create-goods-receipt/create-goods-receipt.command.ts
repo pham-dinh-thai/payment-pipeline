@@ -1,4 +1,5 @@
 import { Command } from '@nestjs/cqrs';
+import { type ActorHeaders } from '../../../../../shared/types/actor-headers';
 
 export type CreateGoodsReceiptLineProps = {
   lotNumber: string;
@@ -16,6 +17,7 @@ export class CreateGoodsReceiptCommand extends Command<{
     public readonly supplierId: string,
     public readonly lines: CreateGoodsReceiptLineProps[],
     public readonly createdBy: string,
+    public readonly headers: ActorHeaders,
   ) {
     super();
   }

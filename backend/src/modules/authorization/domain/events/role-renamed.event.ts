@@ -1,5 +1,5 @@
-import type { RoleEventPayload } from './role-event.payload';
+import type { AuditEventPayload } from '../../../audit-logs/domain/events/audit-event.payload';
 
 export const ROLE_RENAMED_EVENT = 'role.renamed';
 
-export type RoleRenamedPayload = RoleEventPayload;
+export type RoleRenamedPayload = AuditEventPayload;

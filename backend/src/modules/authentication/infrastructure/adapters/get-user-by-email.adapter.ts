@@ -9,12 +9,13 @@ export class GetUserByEmailAdapter implements IGetUserByEmailPort {
 
   public async execute(
     email: string,
-  ): Promise<{ id: string; email: string } | null> {
+  ): Promise<{ id: string; email: string; roleIds: string[] } | null> {
     const user = await this.queryBus.execute(new GetUserByEmailQuery(email));
 
     if (!user) {
       return null;
     }
-    return { id: user.id, email: user.email };
+
+    return { id: user.id, email: user.email, roleIds: user.roleIds };
   }
 }

@@ -63,21 +63,14 @@ export class MikroInventoriesRepository implements IInventoriesRepository {
         ).values(),
       ];
 
-      if (updates.length) {
-        await this.entityManager.getConnection().execute(
-          `update "batches"
-              set "quantity" = v.quantity,
-                  "updated_at" = v.updated_at
-             from unnest(?::uuid[], ?::int[], ?::timestamptz[])
-               as v(id, quantity, updated_at)
-            where "batches"."id" = v.id`,
-          [
-            updates.map((batch) => batch.getId()),
-            updates.map((batch) => batch.getQuantity()),
-            updates.map((batch) => batch.getUpdatedAt()),
-          ],
-          'run',
-          this.entityManager.getTransactionContext(),
+      for (const batch of updates) {
+        await this.entityManager.nativeUpdate(
+          MikroBatch,
+          { id: batch.getId() },
+          {
+            quantity: batch.getQuantity(),
+            updatedAt: batch.getUpdatedAt(),
+          },
         );
       }
 

@@ -505,8 +505,8 @@
         },
         {
           "name": "audit_logs_entity_type_check",
-          "expression": "\"entity_type\" in ('accounts', 'users', 'customers', 'roles', 'orders')",
-          "definition": "check (\"entity_type\" in ('accounts', 'users', 'customers', 'roles', 'orders'))",
+          "expression": "\"entity_type\" in ('accounts', 'users', 'customers', 'roles', 'orders', 'products', 'suppliers', 'goods_receipts', 'inventories')",
+          "definition": "check (\"entity_type\" in ('accounts', 'users', 'customers', 'roles', 'orders', 'products', 'suppliers', 'goods_receipts', 'inventories'))",
           "columnName": "entity_type"
         },
         {

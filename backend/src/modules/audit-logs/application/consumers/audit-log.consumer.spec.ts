@@ -6,31 +6,37 @@ import { ActorType } from '../../domain/enums/actor-type.enum';
 import { AuditStatus } from '../../domain/enums/audit-status.enum';
 import { EntityType } from '../../domain/enums/entity-type.enum';
 import { RecordAuditLogCommand } from '../commands/record-audit-log/record-audit-log.command';
-import { PERMISSION_GRANTED_EVENT } from '../../../authorization/domain/events/permission-granted.event';
 import { ROLE_CREATED_EVENT } from '../../../authorization/domain/events/role-created.event';
 import { AuditLogConsumer } from './audit-log.consumer';
+import { AUDITED_EVENT_TYPES } from './audited-event-types';
+
+const headers = {
+  actorId: 'actor-1',
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
 
 const payload = {
-  headers: {
-    actorId: 'actor-1',
-    actorType: 'user',
-    actorLabel: 'admin@example.com',
-    userIp: '127.0.0.1',
-    userAgent: 'jest',
-  },
-  role: {
-    id: 'role-1',
-    name: 'manager',
-    permissions: ['orders:read'],
-    isSuperAdmin: false,
-    createdAt: '2026-11-11T00:00:00.000Z',
+  headers,
+  audit: {
+    entityType: EntityType.ROLES,
+    entityId: 'role-1',
+    before: { name: 'old-name' },
+    after: { name: 'new-name' },
+    metadata: { permission: 'orders:read' },
+    reason: 'manual fix',
   },
 };
 
-const outboxEvent = (eventType: string): OutboxEvent => ({
+const outboxEvent = (
+  eventType: string,
+  eventPayload: Record<string, unknown> = payload,
+): OutboxEvent => ({
   id: 42,
   eventType,
-  payload,
+  payload: eventPayload,
   createdAt: new Date('2026-11-11T00:00:00.000Z'),
   processed: false,
   attempts: 0,
@@ -56,11 +62,12 @@ describe('AuditLogConsumer', () => {
   it('registers one consumer for every audited event type', () => {
     const { consumer, registry } = setup();
 
-    expect(registry.get(ROLE_CREATED_EVENT)).toBe(consumer);
-    expect(registry.get(PERMISSION_GRANTED_EVENT)).toBe(consumer);
+    for (const eventType of AUDITED_EVENT_TYPES) {
+      expect(registry.get(eventType)).toBe(consumer);
+    }
   });
 
-  it('maps role.created to an audit entry', async () => {
+  it('turns a generic audit envelope into a record command', async () => {
     const { consumer, execute } = setup();
 
     await consumer.handle(outboxEvent(ROLE_CREATED_EVENT));
@@ -76,32 +83,48 @@ describe('AuditLogConsumer', () => {
       entityType: EntityType.ROLES,
       entityId: 'role-1',
       status: AuditStatus.SUCCESS,
-      after: {
-        name: 'manager',
-        permissions: ['orders:read'],
-        isSuperAdmin: false,
-      },
-      metadata: { sourceEventId: 42 },
+      before: { name: 'old-name' },
+      after: { name: 'new-name' },
+      metadata: { permission: 'orders:read', sourceEventId: 42 },
+      reason: 'manual fix',
       ipAddress: '127.0.0.1',
       userAgent: 'jest',
     });
   });
 
-  it('maps role.permission_granted to its own action', async () => {
+  it('defaults missing before/after/metadata to empty values', async () => {
     const { consumer, execute } = setup();
 
-    await consumer.handle(outboxEvent(PERMISSION_GRANTED_EVENT));
+    await consumer.handle(
+      outboxEvent(ROLE_CREATED_EVENT, {
+        headers,
+        audit: {
+          entityType: EntityType.ROLES,
+          entityId: 'role-1',
+        },
+      }),
+    );
 
     const [command] = execute.mock.calls[0];
 
-    expect(command.props.action).toBe('role.permission_granted');
+    expect(command.props.before).toBeNull();
+    expect(command.props.after).toBeNull();
+    expect(command.props.metadata).toEqual({ sourceEventId: 42 });
+    expect(command.props.reason).toBeNull();
   });
 
-  it('rejects event types without a mapping', async () => {
-    const { consumer } = setup();
+  it('treats non-user actors as SYSTEM', async () => {
+    const { consumer, execute } = setup();
 
-    await expect(consumer.handle(outboxEvent('role.unknown'))).rejects.toThrow(
-      'No audit mapping registered for outbox event "role.unknown"',
+    await consumer.handle(
+      outboxEvent(ROLE_CREATED_EVENT, {
+        ...payload,
+        headers: { ...headers, actorType: 'system' },
+      }),
     );
+
+    const [command] = execute.mock.calls[0];
+
+    expect(command.props.actorType).toBe(ActorType.SYSTEM);
   });
 });

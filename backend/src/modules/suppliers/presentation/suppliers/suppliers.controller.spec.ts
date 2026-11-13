@@ -12,30 +12,37 @@ import { SupplierStatus } from '../../domain/enums/supplier-status.enum';
 import { GetSuppliersQuery } from '../../application/queries/get-suppliers/get-suppliers.query';
 import { DeactivateSupplierCommand } from '../../application/commands/deactivate-supplier/deactivate-supplier.command';
 import { ActivateSupplierCommand } from '../../application/commands/activate-supplier/activate-supplier.command';
+import { AuthGuard } from '../../../../shared/modules/security/auth.guard';
 
 const SUPPLIER_ID = 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c';
 
+const headers = {
+  actorId: '7d0d2c55-9a9d-4c7d-9f6a-3f7f5a1b2c3d',
+  actorType: 'user',
+  actorLabel: 'admin@example.com',
+  userIp: '127.0.0.1',
+  userAgent: 'jest',
+};
+
 describe('SuppliersController', () => {
   let suppliersController: SuppliersController;
-  let commandBus: jest.Mocked<CommandBus>;
-  let queryBus: jest.Mocked<QueryBus>;
+  let commandExecute: jest.Mock<(command: unknown) => Promise<unknown>>;
+  let queryExecute: jest.Mock<(query: unknown) => Promise<unknown>>;
 
   beforeEach(async () => {
-    commandBus = {
-      execute: jest.fn(),
-    } as unknown as jest.Mocked<CommandBus>;
-
-    queryBus = {
-      execute: jest.fn(),
-    } as unknown as jest.Mocked<QueryBus>;
+    commandExecute = jest.fn<(command: unknown) => Promise<unknown>>();
+    queryExecute = jest.fn<(query: unknown) => Promise<unknown>>();
 
     const suppliersModule = await Test.createTestingModule({
       controllers: [SuppliersController],
       providers: [
-        { provide: CommandBus, useValue: commandBus },
-        { provide: QueryBus, useValue: queryBus },
+        { provide: CommandBus, useValue: { execute: commandExecute } },
+        { provide: QueryBus, useValue: { execute: queryExecute } },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard)
+      .useValue({ canActivate: () => true })
+      .compile();
 
     suppliersController = suppliersModule.get(SuppliersController);
   });
@@ -57,12 +64,12 @@ describe('SuppliersController', () => {
         ),
       ];
 
-      queryBus.execute.mockResolvedValue(response);
+      queryExecute.mockResolvedValue(response);
 
       const result = await suppliersController.findAll();
 
-      expect(queryBus.execute).toHaveBeenCalledTimes(1);
-      expect(queryBus.execute).toHaveBeenCalledWith(new GetSuppliersQuery());
+      expect(queryExecute).toHaveBeenCalledTimes(1);
+      expect(queryExecute).toHaveBeenCalledWith(new GetSuppliersQuery());
       expect(result).toBe(response);
     });
   });
@@ -76,20 +83,21 @@ describe('SuppliersController', () => {
       request.address = '12 Nguyễn Huệ';
       request.taxCode = '0312345678';
 
-      commandBus.execute.mockResolvedValue({ id: SUPPLIER_ID });
+      commandExecute.mockResolvedValue({ id: SUPPLIER_ID });
 
-      const result = await suppliersController.create(request);
+      const result = await suppliersController.create(request, headers);
 
-      expect(commandBus.execute).toHaveBeenCalledWith(
+      expect(commandExecute).toHaveBeenCalledWith(
         new CreateSupplierCommand(
           request.name,
           request.phone,
           request.email,
           request.address,
           request.taxCode,
+          headers,
         ),
       );
-      expect(commandBus.execute).toHaveBeenCalledTimes(1);
+      expect(commandExecute).toHaveBeenCalledTimes(1);
       expect(result).toEqual({ id: SUPPLIER_ID });
     });
 
@@ -97,13 +105,20 @@ describe('SuppliersController', () => {
       const request = new CreateSupplierRequest();
       request.name = 'Công ty TNHH ABC';
 
-      commandBus.execute.mockResolvedValue({ id: SUPPLIER_ID });
+      commandExecute.mockResolvedValue({ id: SUPPLIER_ID });
 
-      const result = await suppliersController.create(request);
+      const result = await suppliersController.create(request, headers);
 
-      expect(commandBus.execute).toHaveBeenCalledTimes(1);
-      expect(commandBus.execute).toHaveBeenCalledWith(
-        new CreateSupplierCommand(request.name, null, null, null, null),
+      expect(commandExecute).toHaveBeenCalledTimes(1);
+      expect(commandExecute).toHaveBeenCalledWith(
+        new CreateSupplierCommand(
+          request.name,
+          null,
+          null,
+          null,
+          null,
+          headers,
+        ),
       );
       expect(result).toEqual({ id: SUPPLIER_ID });
     });
@@ -127,12 +142,16 @@ describe('SuppliersController', () => {
         request.taxCode,
       );
 
-      commandBus.execute.mockResolvedValue(response);
+      commandExecute.mockResolvedValue(response);
 
-      const result = await suppliersController.update(SUPPLIER_ID, request);
+      const result = await suppliersController.update(
+        SUPPLIER_ID,
+        request,
+        headers,
+      );
 
-      expect(commandBus.execute).toHaveBeenCalledTimes(1);
-      expect(commandBus.execute).toHaveBeenCalledWith(
+      expect(commandExecute).toHaveBeenCalledTimes(1);
+      expect(commandExecute).toHaveBeenCalledWith(
         new UpdateSupplierCommand(
           SUPPLIER_ID,
           request.name,
@@ -140,6 +159,7 @@ describe('SuppliersController', () => {
           request.email,
           request.address,
           request.taxCode,
+          headers,
         ),
       );
       expect(result).toBe(response);
@@ -157,12 +177,16 @@ describe('SuppliersController', () => {
         null,
         null,
       );
-      commandBus.execute.mockResolvedValue(response);
+      commandExecute.mockResolvedValue(response);
 
-      const result = await suppliersController.update(SUPPLIER_ID, request);
+      const result = await suppliersController.update(
+        SUPPLIER_ID,
+        request,
+        headers,
+      );
 
-      expect(commandBus.execute).toHaveBeenCalledTimes(1);
-      expect(commandBus.execute).toHaveBeenCalledWith(
+      expect(commandExecute).toHaveBeenCalledTimes(1);
+      expect(commandExecute).toHaveBeenCalledWith(
         new UpdateSupplierCommand(
           SUPPLIER_ID,
           request.name,
@@ -170,6 +194,7 @@ describe('SuppliersController', () => {
           null,
           null,
           null,
+          headers,
         ),
       );
       expect(result).toBe(response);
@@ -178,13 +203,13 @@ describe('SuppliersController', () => {
 
   describe('deactivate', () => {
     it('dispatches DeactivateSupplierCommand and returns deactivated supplier', async () => {
-      commandBus.execute.mockResolvedValue({ id: SUPPLIER_ID });
+      commandExecute.mockResolvedValue({ id: SUPPLIER_ID });
 
-      const result = await suppliersController.deactivate(SUPPLIER_ID);
+      const result = await suppliersController.deactivate(SUPPLIER_ID, headers);
 
-      expect(commandBus.execute).toHaveBeenCalledTimes(1);
-      expect(commandBus.execute).toHaveBeenCalledWith(
-        new DeactivateSupplierCommand(SUPPLIER_ID),
+      expect(commandExecute).toHaveBeenCalledTimes(1);
+      expect(commandExecute).toHaveBeenCalledWith(
+        new DeactivateSupplierCommand(SUPPLIER_ID, headers),
       );
       expect(result).toEqual({ id: SUPPLIER_ID });
     });
@@ -192,13 +217,13 @@ describe('SuppliersController', () => {
 
   describe('activate', () => {
     it('dispatches ActivateSupplierCommand and returns activated supplier', async () => {
-      commandBus.execute.mockResolvedValue({ id: SUPPLIER_ID });
+      commandExecute.mockResolvedValue({ id: SUPPLIER_ID });
 
-      const result = await suppliersController.activate(SUPPLIER_ID);
+      const result = await suppliersController.activate(SUPPLIER_ID, headers);
 
-      expect(commandBus.execute).toHaveBeenCalledTimes(1);
-      expect(commandBus.execute).toHaveBeenCalledWith(
-        new ActivateSupplierCommand(SUPPLIER_ID),
+      expect(commandExecute).toHaveBeenCalledTimes(1);
+      expect(commandExecute).toHaveBeenCalledWith(
+        new ActivateSupplierCommand(SUPPLIER_ID, headers),
       );
       expect(result).toEqual({ id: SUPPLIER_ID });
     });

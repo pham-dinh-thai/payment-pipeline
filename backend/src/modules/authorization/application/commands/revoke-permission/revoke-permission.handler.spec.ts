@@ -16,6 +16,7 @@ import {
   OUTBOX_REPOSITORY,
 } from '../../../../../shared/modules/outbox/domain/outbox.repository';
 import { Role } from '../../../domain/role.aggregate';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 const headers = {
   actorId: '7d0d2c55-9a9d-4c7d-9f6a-3f7f5a1b2c3d',
@@ -100,12 +101,12 @@ describe('RevokePermissionHandler', () => {
           eventType: 'role.revoked',
           payload: {
             headers,
-            role: {
-              id,
-              name: 'manager',
-              permissions: [],
-              isSuperAdmin: false,
-              createdAt: createdAt.toISOString(),
+            audit: {
+              entityType: EntityType.ROLES,
+              entityId: id,
+              before: { permissions: [] },
+              after: { permissions: [] },
+              metadata: { permission: 'orders:process' },
             },
           },
         },

@@ -10,12 +10,23 @@ import {
   type IUnitOfWork,
   UNIT_OF_WORK,
 } from '../../../../../shared/modules/unit-of-work/unit-of-work';
+import {
+  type IOutboxRepository,
+  OUTBOX_REPOSITORY,
+} from '../../../../../shared/modules/outbox/domain/outbox.repository';
+import { SUPPLIER_CREATED_EVENT } from '../../../domain/events/supplier-created.event';
+import { auditEventPayload } from '../../../../audit-logs/domain/events/audit-event.payload';
+import { EntityType } from '../../../../audit-logs/domain/enums/entity-type.enum';
 
 @CommandHandler(CreateSupplierCommand)
 export class CreateSupplierHandler implements ICommandHandler<CreateSupplierCommand> {
   public constructor(
     @Inject(SUPPLIERS_REPOSITORY)
     private readonly suppliersRepository: ISuppliersRepository,
+
+    @Inject(OUTBOX_REPOSITORY)
+    private readonly outboxRepository: IOutboxRepository,
+
     @Inject(UNIT_OF_WORK)
     private readonly unitOfWork: IUnitOfWork,
   ) {}
@@ -34,6 +45,23 @@ export class CreateSupplierHandler implements ICommandHandler<CreateSupplierComm
       });
 
       await this.suppliersRepository.create(supplier);
+
+      await this.outboxRepository.create({
+        eventType: SUPPLIER_CREATED_EVENT,
+        payload: auditEventPayload(command.headers, {
+          entityType: EntityType.SUPPLIERS,
+          entityId: supplier.getId(),
+          after: {
+            code: supplier.getCode(),
+            name: supplier.getName(),
+            status: supplier.getStatus(),
+            phone: supplier.getPhone(),
+            email: supplier.getEmail(),
+            address: supplier.getAddress(),
+            taxCode: supplier.getTaxCode(),
+          },
+        }),
+      });
 
       return { id: supplier.getId() };
     });

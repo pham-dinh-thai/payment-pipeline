@@ -8,4 +8,5 @@ export enum EntityType {
   SUPPLIERS = 'suppliers',
   GOODS_RECEIPTS = 'goods_receipts',
   INVENTORIES = 'inventories',
+  EXPENSES = 'expenses',
 }

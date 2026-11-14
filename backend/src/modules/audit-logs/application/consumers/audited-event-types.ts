@@ -19,6 +19,7 @@ import { GOODS_RECEIPT_CONFIRMED_EVENT } from '../../../goods-receipts/domain/ev
 import { GOODS_RECEIPT_CANCELLED_EVENT } from '../../../goods-receipts/domain/events/goods-receipt-cancelled.event';
 import { INVENTORY_STOCK_ISSUED_EVENT } from '../../../inventories/domain/events/inventory-stock-issued.event';
 import { INVENTORY_STOCK_RECONCILED_EVENT } from '../../../inventories/domain/events/inventory-stock-reconciled.event';
+import { EXPENSE_CREATED_EVENT } from '../../../expenses/domain/events/expense-created.event';
 
 /**
  * Verbs stored in `audit_logs.action`. The outbox event type identifies the
@@ -70,6 +71,7 @@ export const AUDITED_EVENT_ACTIONS = {
   [GOODS_RECEIPT_CANCELLED_EVENT]: 'cancel',
   [INVENTORY_STOCK_ISSUED_EVENT]: 'issue',
   [INVENTORY_STOCK_RECONCILED_EVENT]: 'reconcile',
+  [EXPENSE_CREATED_EVENT]: 'create',
 } as const satisfies Record<string, AuditAction>;
 
 export type AuditedEventType = keyof typeof AUDITED_EVENT_ACTIONS;

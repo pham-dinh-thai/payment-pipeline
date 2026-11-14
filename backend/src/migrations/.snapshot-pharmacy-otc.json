@@ -1086,7 +1086,7 @@
         {
           "name": "expenses_amount_check",
           "expression": "amount >= 0",
-          "definition": "check (amount >= 0)",
+          "definition": "CHECK ((amount >= 0))",
           "columnName": "amount"
         },
         {
@@ -2419,7 +2419,7 @@
     {
       "name": "inventories",
       "schema": "public",
-      "definition": "select\n      b.product_id,\n      sum(b.quantity)::int as total_quantity,\n      count(*)::int as batch_count,\n      min(b.expires_at) filter (where b.quantity > 0) as nearest_expiry,\n      sum(b.quantity * b.unit_cost)::bigint as stock_value,\n      max(b.updated_at) as updated_at\n    from batches b\n    group by b.product_id"
+      "definition": "SELECT product_id,\n    (sum(quantity))::integer AS total_quantity,\n    (count(*))::integer AS batch_count,\n    min(expires_at) FILTER (WHERE (quantity > 0)) AS nearest_expiry,\n    (sum((quantity * unit_cost)))::bigint AS stock_value,\n    max(updated_at) AS updated_at\n   FROM batches b\n  GROUP BY product_id"
     }
   ],
   "nativeEnums": {}

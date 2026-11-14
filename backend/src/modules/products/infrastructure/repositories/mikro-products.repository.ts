@@ -15,7 +15,7 @@ export class MikroProductsRepository implements IProductsRepository {
       Product.fromPersistent({
         id: mikroProduct.id,
         name: mikroProduct.name,
-        unitPrice: mikroProduct.unitPrice,
+        unitPrice: mikroProduct.unitPrice.toString(),
         quantity: mikroProduct.quantity,
         createdAt: mikroProduct.createdAt,
         updatedAt: mikroProduct.updatedAt,
@@ -30,7 +30,7 @@ export class MikroProductsRepository implements IProductsRepository {
       ? Product.fromPersistent({
           id: mikroProduct.id,
           name: mikroProduct.name,
-          unitPrice: mikroProduct.unitPrice,
+          unitPrice: mikroProduct.unitPrice.toString(),
           quantity: mikroProduct.quantity,
           createdAt: mikroProduct.createdAt,
           updatedAt: mikroProduct.updatedAt,
@@ -48,7 +48,7 @@ export class MikroProductsRepository implements IProductsRepository {
     const mikroProduct = this.entityManager.create(MikroProduct, {
       id: product.getId(),
       name: product.getName(),
-      unitPrice: product.getUnitPrice(),
+      unitPrice: BigInt(product.getUnitPrice()),
       quantity: product.getQuantity(),
       createdAt: product.getCreatedAt(),
       updatedAt: product.getUpdatedAt(),

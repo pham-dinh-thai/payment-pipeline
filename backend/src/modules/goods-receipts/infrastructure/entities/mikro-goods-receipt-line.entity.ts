@@ -32,11 +32,9 @@ export class MikroGoodsReceiptLine {
 
   @Property({
     fieldName: 'unit_cost',
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
+    type: 'bigint',
   })
-  unitCost!: string;
+  unitCost!: bigint;
 
   @Property({ fieldName: 'expires_at', type: 'date' })
   expiresAt!: Date;

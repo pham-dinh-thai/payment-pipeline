@@ -31,11 +31,9 @@ export class MikroBatch {
 
   @Property({
     fieldName: 'unit_cost',
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
+    type: 'bigint',
   })
-  unitCost!: string;
+  unitCost!: bigint;
 
   @Enum(() => BatchStatus)
   status!: BatchStatus;

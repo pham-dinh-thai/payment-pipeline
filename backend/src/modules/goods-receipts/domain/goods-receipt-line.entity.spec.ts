@@ -18,7 +18,7 @@ const createLine = (
   GoodsReceiptLine.create({
     lotNumber: 'LOT-001',
     productId: PRODUCT_ID,
-    unitCost: '2.50',
+    unitCost: '2500',
     quantity: 10,
     expiresAt: EXPIRES_AT,
     ...overrides,
@@ -42,7 +42,7 @@ describe('GoodsReceiptLine', () => {
       expect(line.getLotNumber()).toBe('LOT-001');
       expect(line.getProductId()).toBe(PRODUCT_ID);
       expect(line.getQuantity()).toBe(10);
-      expect(line.getUnitCost()).toBe('2.50');
+      expect(line.getUnitCost()).toBe('2500');
       expect(line.getExpiresAt()).toEqual(EXPIRES_AT);
       expect(line.getBatchId()).toBeNull();
     });
@@ -114,7 +114,7 @@ describe('GoodsReceiptLine', () => {
         id: PRODUCT_ID,
         lotNumber: 'LOT-002',
         productId: PRODUCT_ID,
-        unitCost: '5.00',
+        unitCost: '5000',
         quantity: 7,
         expiresAt: EXPIRES_AT,
         batchId: BATCH_ID,
@@ -125,7 +125,7 @@ describe('GoodsReceiptLine', () => {
       expect(line.getId()).toBe(PRODUCT_ID);
       expect(line.getLotNumber()).toBe('LOT-002');
       expect(line.getProductId()).toBe(PRODUCT_ID);
-      expect(line.getUnitCost()).toBe('5.00');
+      expect(line.getUnitCost()).toBe('5000');
       expect(line.getQuantity()).toBe(7);
       expect(line.getExpiresAt()).toEqual(EXPIRES_AT);
       expect(line.getBatchId()).toBe(BATCH_ID);
@@ -162,9 +162,9 @@ describe('GoodsReceiptLine', () => {
 
   describe('getTotalCost', () => {
     it('returns unit cost multiplied by quantity', () => {
-      const line = createLine({ quantity: 10, unitCost: '2.50' });
+      const line = createLine({ quantity: 10, unitCost: '2500' });
 
-      expect(line.getTotalCost()).toBe('25.00');
+      expect(line.getTotalCost()).toBe('25000');
     });
   });
 });

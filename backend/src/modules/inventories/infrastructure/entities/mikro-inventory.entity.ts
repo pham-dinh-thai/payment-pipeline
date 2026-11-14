@@ -8,7 +8,7 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/decorators/legacy';
       sum(b.quantity)::int as total_quantity,
       count(*)::int as batch_count,
       min(b.expires_at) filter (where b.quantity > 0) as nearest_expiry,
-      sum(b.quantity * b.unit_cost) as stock_value,
+      sum(b.quantity * b.unit_cost)::bigint as stock_value,
       max(b.updated_at) as updated_at
     from batches b
     group by b.product_id`,
@@ -26,8 +26,8 @@ export class MikroInventory {
   @Property({ fieldName: 'nearest_expiry', type: 'date' })
   nearestExpiry!: Date | null;
 
-  @Property({ fieldName: 'stock_value', type: 'decimal' })
-  stockValue!: string | null;
+  @Property({ fieldName: 'stock_value', type: 'bigint' })
+  stockValue!: bigint | null;
 
   @Property({ fieldName: 'updated_at', type: 'timestamptz' })
   updatedAt!: Date;

@@ -10,11 +10,9 @@ export class MikroProduct {
 
   @Property({
     fieldName: 'unit_price',
-    type: 'decimal',
-    precision: 12,
-    scale: 2,
+    type: 'bigint',
   })
-  unitPrice!: string;
+  unitPrice!: bigint;
 
   @Property({ type: 'int' })
   quantity!: number;

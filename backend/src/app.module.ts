@@ -17,6 +17,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
 import { AuditLogsModule } from './modules/audit-logs/audit-logs.module';
 import { UnitOfWorkModule } from './shared/modules/unit-of-work/unit-of-work.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { UnitOfWorkModule } from './shared/modules/unit-of-work/unit-of-work.mod
     }),
     AuthorizationModule,
     AuditLogsModule,
+    ExpensesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

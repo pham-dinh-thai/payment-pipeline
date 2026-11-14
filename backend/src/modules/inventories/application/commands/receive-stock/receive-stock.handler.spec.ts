@@ -32,7 +32,7 @@ const createCommand = (
     lotNumber,
     PRODUCT_ID,
     quantity,
-    '2.50',
+    '2500',
     EXPIRES_AT,
     CREATED_BY,
   );
@@ -45,7 +45,7 @@ const createInventory = (batchId?: string): Inventory => {
     lotNumber: 'LOT-001',
     productId: PRODUCT_ID,
     quantity: 10,
-    unitCost: '2.50',
+    unitCost: '2500',
     status: BatchStatus.ACTIVE,
     expiresAt: EXPIRES_AT,
     createdBy: CREATED_BY,
@@ -94,7 +94,7 @@ describe('ReceiveStockHandler', () => {
     expect(newBatch.getLotNumber()).toBe('LOT-001');
     expect(newBatch.getProductId()).toBe(PRODUCT_ID);
     expect(newBatch.getQuantity()).toBe(10);
-    expect(newBatch.getUnitCost()).toBe('2.50');
+    expect(newBatch.getUnitCost()).toBe('2500');
     expect(newBatch.getStatus()).toBe(BatchStatus.ACTIVE);
     expect(newBatch.getExpiresAt()).toEqual(EXPIRES_AT);
     expect(newBatch.getCreatedBy()).toBe(CREATED_BY);
@@ -133,7 +133,7 @@ describe('ReceiveStockHandler', () => {
         'LOT-001',
         PRODUCT_ID,
         10,
-        '2.50',
+        '2500',
         EXPIRES_AT,
         CREATED_BY,
         BATCH_ID,
@@ -153,7 +153,7 @@ describe('ReceiveStockHandler', () => {
         'LOT-001',
         PRODUCT_ID,
         10,
-        '2.50',
+        '2500',
         EXPIRES_AT,
         CREATED_BY,
         BATCH_ID,

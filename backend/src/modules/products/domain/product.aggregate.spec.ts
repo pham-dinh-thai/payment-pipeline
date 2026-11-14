@@ -4,7 +4,7 @@ import { Product } from './product.aggregate';
 const createProduct = (): Product =>
   Product.create({
     name: 'Coffee',
-    unitPrice: '12.50',
+    unitPrice: '12500',
     quantity: 3,
   });
 
@@ -20,7 +20,7 @@ describe('Product', () => {
       /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
     );
     expect(product.getName()).toBe('Coffee');
-    expect(product.getUnitPrice()).toBe('12.50');
+    expect(product.getUnitPrice()).toBe('12500');
     expect(product.getQuantity()).toBe(3);
   });
 
@@ -50,10 +50,10 @@ describe('Product', () => {
   it('updates unit price and quantity through value objects', () => {
     const product = createProduct();
 
-    product.updateUnitPrice('99.99');
+    product.updateUnitPrice('99990');
     product.updateQuantity(0);
 
-    expect(product.getUnitPrice()).toBe('99.99');
+    expect(product.getUnitPrice()).toBe('99990');
     expect(product.getQuantity()).toBe(0);
   });
 
@@ -61,7 +61,7 @@ describe('Product', () => {
     const product = Product.fromPersistent({
       id: 'b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c',
       name: 'Tea',
-      unitPrice: '5.00',
+      unitPrice: '5000',
       quantity: 7,
       createdAt: new Date('2026-01-01T00:00:00.000Z'),
       updatedAt: new Date('2026-01-02T00:00:00.000Z'),
@@ -69,7 +69,7 @@ describe('Product', () => {
 
     expect(product.getId()).toBe('b3d7f2a8-7a0e-4f1c-9c1a-4d3f5e6a7b8c');
     expect(product.getName()).toBe('Tea');
-    expect(product.getUnitPrice()).toBe('5.00');
+    expect(product.getUnitPrice()).toBe('5000');
     expect(product.getQuantity()).toBe(7);
   });
 });

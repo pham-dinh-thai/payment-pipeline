@@ -61,7 +61,7 @@ export class GoodsReceiptMapper {
       id: mikroLine.id,
       lotNumber: mikroLine.lotNumber,
       productId: mikroLine.productId,
-      unitCost: mikroLine.unitCost,
+      unitCost: mikroLine.unitCost.toString(),
       quantity: mikroLine.quantity,
       expiresAt: new Date(mikroLine.expiresAt),
       batchId: mikroLine.batchId,
@@ -81,7 +81,7 @@ export class GoodsReceiptMapper {
     mikroLine.productId = line.getProductId();
     mikroLine.lotNumber = line.getLotNumber();
     mikroLine.quantity = line.getQuantity();
-    mikroLine.unitCost = line.getUnitCost();
+    mikroLine.unitCost = BigInt(line.getUnitCost());
     mikroLine.expiresAt = line.getExpiresAt();
     mikroLine.batchId = line.getBatchId();
     mikroLine.createdAt = line.getCreatedAt();

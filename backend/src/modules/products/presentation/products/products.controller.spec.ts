@@ -16,7 +16,7 @@ const headers = {
 const buildRequest = (): CreateProductRequest =>
   Object.assign(new CreateProductRequest(), {
     name: 'product-1',
-    unitPrice: '2333.23',
+    unitPrice: '233323',
     quantity: 100,
   });
 
@@ -46,7 +46,7 @@ describe('ProductsController', () => {
     expect(command).toBeInstanceOf(CreateProductCommand);
     expect(command).toMatchObject({
       name: 'product-1',
-      unitPrice: '2333.23',
+      unitPrice: '233323',
       quantity: 100,
       headers,
     });

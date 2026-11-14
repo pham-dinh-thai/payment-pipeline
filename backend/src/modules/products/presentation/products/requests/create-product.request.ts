@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsDecimal, IsInt, IsNotEmpty, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class CreateProductRequest {
   @Transform(({ value }: { value: unknown }) =>
@@ -9,7 +9,7 @@ export class CreateProductRequest {
   @IsNotEmpty()
   name!: string;
 
-  @IsDecimal()
+  @Matches(/^\d+$/, { message: 'unitPrice must be an integer in VND' })
   @IsNotEmpty()
   unitPrice!: string;
 

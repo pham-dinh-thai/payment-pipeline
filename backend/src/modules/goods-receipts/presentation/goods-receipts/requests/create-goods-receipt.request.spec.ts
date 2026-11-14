@@ -14,7 +14,7 @@ const validPayload = (): Record<string, unknown> => ({
       lotNumber: 'LOT-001',
       productId: PRODUCT_ID,
       quantity: 10,
-      unitCost: '2.50',
+      unitCost: '2500',
       expiresAt: '2030-01-01T00:00:00.000Z',
     },
   ],

@@ -3,25 +3,25 @@ import { UnprocessableEntityException } from '@nestjs/common';
 import { UnitPrice } from './unit-price.object-value';
 
 describe('UnitPrice', () => {
-  it('normalizes a valid value to 2 decimal places', () => {
-    expect(UnitPrice.create('12.5').toString()).toBe('12.50');
-    expect(UnitPrice.create('0').toString()).toBe('0.00');
+  it('normalizes a valid value to an integer', () => {
+    expect(UnitPrice.create('12500').toString()).toBe('12500');
+    expect(UnitPrice.create('0').toString()).toBe('0');
   });
 
   it('compares values by numeric value', () => {
-    expect(UnitPrice.create('12.50').equals(UnitPrice.create('12.5'))).toBe(
+    expect(UnitPrice.create('12500').equals(UnitPrice.create('012500'))).toBe(
       true,
     );
-    expect(UnitPrice.create('12.50').equals(UnitPrice.create('13.00'))).toBe(
+    expect(UnitPrice.create('12500').equals(UnitPrice.create('13000'))).toBe(
       false,
     );
   });
 
   it.each([
-    ['not-a-number', 'Invalid unit price'],
-    ['-1.00', 'can not be less than 0'],
-    ['1.234', 'at most 2 decimal places'],
-    ['10000000000.00', 'too large'],
+    ['not-a-number', 'not an integer'],
+    ['-100', 'can not be less than 0'],
+    ['12.5', 'not an integer'],
+    ['1000000000000000', 'too large'],
   ])('rejects %s', (raw, message) => {
     expect(() => UnitPrice.create(raw)).toThrow(UnprocessableEntityException);
     expect(() => UnitPrice.create(raw)).toThrow(message);

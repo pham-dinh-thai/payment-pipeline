@@ -26,7 +26,7 @@ const payload: GoodsReceiptStockReceivedPayload = {
       productId: FIRST_PRODUCT_ID,
       lotNumber: 'LOT-001',
       quantity: 10,
-      unitCost: '2.50',
+      unitCost: '2500',
       expiresAt: EXPIRES_AT,
     },
     {
@@ -34,7 +34,7 @@ const payload: GoodsReceiptStockReceivedPayload = {
       productId: SECOND_PRODUCT_ID,
       lotNumber: 'LOT-002',
       quantity: 5,
-      unitCost: '4.00',
+      unitCost: '4000',
       expiresAt: EXPIRES_AT,
     },
   ],
@@ -90,7 +90,7 @@ describe('GoodsReceiptStockReceivedConsumer', () => {
       productId: FIRST_PRODUCT_ID,
       lotNumber: 'LOT-001',
       quantity: 10,
-      unitCost: '2.50',
+      unitCost: '2500',
       createdBy: CONFIRMED_BY,
     });
     expect(first.expiresAt).toEqual(new Date(EXPIRES_AT));
@@ -100,7 +100,7 @@ describe('GoodsReceiptStockReceivedConsumer', () => {
       productId: SECOND_PRODUCT_ID,
       lotNumber: 'LOT-002',
       quantity: 5,
-      unitCost: '4.00',
+      unitCost: '4000',
       createdBy: CONFIRMED_BY,
     });
     expect(second.expiresAt).toEqual(new Date(EXPIRES_AT));

@@ -26,7 +26,7 @@ const createLine = (
   GoodsReceiptLine.create({
     lotNumber: 'LOT-001',
     productId: SUPPLIER_ID,
-    unitCost: '2.50',
+    unitCost: '2500',
     quantity: 10,
     expiresAt: EXPIRES_AT,
     ...overrides,

@@ -53,7 +53,7 @@ describe('CreateProductHandler', () => {
 
   it('creates a product and appends an audit event', async () => {
     const result = await handler.execute(
-      new CreateProductCommand('Coffee', '12.50', 3, headers),
+      new CreateProductCommand('Coffee', '12500', 3, headers),
     );
 
     expect(result.id).toEqual(expect.any(String));
@@ -63,7 +63,7 @@ describe('CreateProductHandler', () => {
     expect(product).toBeInstanceOf(Product);
     expect(product.getId()).toBe(result.id);
     expect(product.getName()).toBe('Coffee');
-    expect(product.getUnitPrice()).toBe('12.50');
+    expect(product.getUnitPrice()).toBe('12500');
     expect(product.getQuantity()).toBe(3);
 
     expect(outboxCreate).toHaveBeenCalledWith({
@@ -75,7 +75,7 @@ describe('CreateProductHandler', () => {
           entityId: product.getId(),
           after: {
             name: 'Coffee',
-            unitPrice: '12.50',
+            unitPrice: '12500',
             quantity: 3,
           },
         },

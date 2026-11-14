@@ -8,7 +8,7 @@ export class BatchMapper {
       lotNumber: mikroBatch.lotNumber,
       productId: mikroBatch.productId,
       quantity: mikroBatch.quantity,
-      unitCost: mikroBatch.unitCost,
+      unitCost: mikroBatch.unitCost.toString(),
       status: mikroBatch.status,
       expiresAt: new Date(mikroBatch.expiresAt),
       createdBy: mikroBatch.createdBy,
@@ -24,7 +24,7 @@ export class BatchMapper {
     mikroBatch.lotNumber = batch.getLotNumber();
     mikroBatch.productId = batch.getProductId();
     mikroBatch.quantity = batch.getQuantity();
-    mikroBatch.unitCost = batch.getUnitCost();
+    mikroBatch.unitCost = BigInt(batch.getUnitCost());
     mikroBatch.status = batch.getStatus();
     mikroBatch.expiresAt = batch.getExpiresAt();
     mikroBatch.createdBy = batch.getCreatedBy();

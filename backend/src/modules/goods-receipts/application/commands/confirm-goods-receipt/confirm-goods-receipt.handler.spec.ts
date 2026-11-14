@@ -55,7 +55,7 @@ const createLine = (
     lotNumber: 'LOT-001',
     productId: PRODUCT_ID,
     quantity: 10,
-    unitCost: '2.50',
+    unitCost: '2500',
     expiresAt: EXPIRES_AT,
     ...overrides,
   });
@@ -171,7 +171,7 @@ describe('ConfirmGoodsReceiptHandler', () => {
             productId: PRODUCT_ID,
             lotNumber: 'LOT-001',
             quantity: 10,
-            unitCost: '2.50',
+            unitCost: '2500',
             expiresAt: EXPIRES_AT.toISOString(),
           },
         ],

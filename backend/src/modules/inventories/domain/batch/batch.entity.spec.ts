@@ -12,7 +12,7 @@ const createBatch = (overrides: Partial<CreateBatchProps> = {}): Batch =>
     lotNumber: 'LOT-001',
     productId: PRODUCT_ID,
     quantity: 10,
-    unitCost: '2.50',
+    unitCost: '2500',
     status: BatchStatus.ACTIVE,
     expiresAt: EXPIRES_AT,
     createdBy: CREATED_BY,
@@ -34,7 +34,7 @@ describe('Batch', () => {
       expect(batch.getLotNumber()).toBe('LOT-001');
       expect(batch.getProductId()).toBe(PRODUCT_ID);
       expect(batch.getQuantity()).toBe(10);
-      expect(batch.getUnitCost()).toBe('2.50');
+      expect(batch.getUnitCost()).toBe('2500');
       expect(batch.getStatus()).toBe(BatchStatus.ACTIVE);
       expect(batch.getExpiresAt()).toEqual(EXPIRES_AT);
       expect(batch.getCreatedBy()).toBe(CREATED_BY);
@@ -57,7 +57,7 @@ describe('Batch', () => {
         lotNumber: 'LOT-002',
         productId: PRODUCT_ID,
         quantity: 7,
-        unitCost: '5.00',
+        unitCost: '5000',
         status: BatchStatus.OUT,
         expiresAt: EXPIRES_AT,
         createdBy: CREATED_BY,
@@ -176,9 +176,9 @@ describe('Batch', () => {
 
   describe('getTotalCost', () => {
     it('returns unit cost multiplied by quantity', () => {
-      const batch = createBatch({ quantity: 10, unitCost: '2.50' });
+      const batch = createBatch({ quantity: 10, unitCost: '2500' });
 
-      expect(batch.getTotalCost()).toBe('25.00');
+      expect(batch.getTotalCost()).toBe('25000');
     });
   });
 });

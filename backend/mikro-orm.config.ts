@@ -13,6 +13,7 @@ import { MikroCustomer } from './src/modules/customers/infrastructure/entities/m
 import { MikroRole } from './src/modules/authorization/infrastructure/entities/mikro-role.entity';
 import { MikroAuditLog } from './src/modules/audit-logs/infrastructure/entities/mikro-audit-log.entity';
 import { MikroOutBoxEvent } from './src/shared/modules/outbox/infrastructure/mikro-outbox-event.entity';
+import { MikroExpense } from './src/modules/expenses/infrastructure/entities/mikro-expense.entity';
 
 dotenv.config({ path: path.resolve('../.env') });
 
@@ -36,6 +37,7 @@ export default defineConfig({
     MikroRole,
     MikroAuditLog,
     MikroOutBoxEvent,
+    MikroExpense,
   ],
   entitiesTs: [
     MikroProduct,
@@ -50,6 +52,7 @@ export default defineConfig({
     MikroRole,
     MikroAuditLog,
     MikroOutBoxEvent,
+    MikroExpense,
   ],
 
   debug: process.env.NODE_ENV !== 'production',

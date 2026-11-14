@@ -3,11 +3,11 @@ import {
   ArrayMinSize,
   IsArray,
   IsDate,
-  IsDecimal,
   IsInt,
   IsNotEmpty,
   IsString,
   IsUUID,
+  Matches,
   MaxLength,
   Min,
   ValidateNested,
@@ -30,7 +30,7 @@ export class GoodsReceiptLineRequest {
   @Min(1)
   quantity!: number;
 
-  @IsDecimal()
+  @Matches(/^\d+$/, { message: 'unitCost must be an integer in VND' })
   @IsNotEmpty()
   unitCost!: string;
 

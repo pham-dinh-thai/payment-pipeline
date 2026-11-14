@@ -10,6 +10,7 @@ import { ReconcileBatchStockHandler } from './application/commands/reconcile-bat
 import { IssueBatchStockHandler } from './application/commands/issue-batch-stock/issue-batch-stock.handler';
 import { SecurityModule } from '../../shared/modules/security/security.module';
 import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
+import { GoodsReceiptStockReceivedConsumer } from './application/consumers/goods-receipt-stock-received.consumer';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { OutBoxModule } from '../../shared/modules/outbox/outbox.module';
     ReceiveStockHandler,
     ReconcileBatchStockHandler,
     IssueBatchStockHandler,
+    GoodsReceiptStockReceivedConsumer,
   ],
 })
 export class InventoriesModule {}

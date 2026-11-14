@@ -7,7 +7,7 @@ import { ActorType } from '../../domain/enums/actor-type.enum';
 import { AuditStatus } from '../../domain/enums/audit-status.enum';
 import { type AuditEventPayload } from '../../domain/events/audit-event.payload';
 import { RecordAuditLogCommand } from '../commands/record-audit-log/record-audit-log.command';
-import { AUDITED_EVENT_TYPES } from './audited-event-types';
+import { AUDITED_EVENT_TYPES, auditActionOf } from './audited-event-types';
 
 @Injectable()
 export class AuditLogConsumer implements OutboxConsumer, OnModuleInit {
@@ -24,6 +24,13 @@ export class AuditLogConsumer implements OutboxConsumer, OnModuleInit {
 
   public async handle(event: OutboxEvent): Promise<void> {
     const { headers, audit } = event.payload as AuditEventPayload;
+    const action = auditActionOf(event.eventType);
+
+    if (!action) {
+      throw new Error(
+        `Missing audit action for event type "${event.eventType}"`,
+      );
+    }
 
     await this.commandBus.execute(
       new RecordAuditLogCommand({
@@ -32,7 +39,7 @@ export class AuditLogConsumer implements OutboxConsumer, OnModuleInit {
         actorType:
           headers.actorType === 'user' ? ActorType.USER : ActorType.SYSTEM,
         actorLabel: headers.actorLabel,
-        action: event.eventType,
+        action,
         entityType: audit.entityType,
         entityId: audit.entityId,
         status: AuditStatus.SUCCESS,

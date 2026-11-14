@@ -18,7 +18,7 @@ const props: CreateAuditLogProps = {
   actorId: '47772e7a-6dd4-4d56-846b-18bd693f46ca',
   actorType: ActorType.USER,
   actorLabel: 'check@example.com',
-  action: 'role.grant_permission',
+  action: 'grant_permission',
   entityType: EntityType.ROLES,
   entityId: '4e770b20-0ab6-494a-9bfd-e475e07c7a17',
   status: AuditStatus.SUCCESS,

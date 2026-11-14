@@ -39,7 +39,7 @@ describe('AuditLogsController', () => {
   it('dispatches ListAuditLogsQuery with parsed filters', async () => {
     const page = new AuditLogPageReadModel([], 0, 2, 10);
     const request: ListAuditLogsRequest = {
-      action: 'role.grant_permission',
+      action: 'grant_permission',
       entityType: EntityType.ROLES,
       status: AuditStatus.FAILED,
       from: '2026-01-01T00:00:00.000Z',
@@ -54,7 +54,7 @@ describe('AuditLogsController', () => {
 
     expect(execute).toHaveBeenCalledWith(
       new ListAuditLogsQuery({
-        action: 'role.grant_permission',
+        action: 'grant_permission',
         entityType: EntityType.ROLES,
         status: AuditStatus.FAILED,
         from: new Date('2026-01-01T00:00:00.000Z'),

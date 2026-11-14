@@ -1,4 +1,5 @@
 import {
+  Check,
   Entity,
   Enum,
   ManyToOne,
@@ -21,6 +22,7 @@ export class MikroExpense {
   @Enum(() => ExpenseCategory)
   category!: ExpenseCategory;
 
+  @Check({ name: 'expenses_amount_check', expression: 'amount >= 0' })
   @Property({ type: 'bigint' })
   amount!: bigint;
 

@@ -274,7 +274,11 @@
             "users",
             "customers",
             "roles",
-            "orders"
+            "orders",
+            "products",
+            "suppliers",
+            "goods_receipts",
+            "inventories"
           ],
           "mappedType": "enum"
         },
@@ -836,6 +840,289 @@
       "checks": [],
       "triggers": [],
       "foreignKeys": {},
+      "comment": null
+    },
+    {
+      "name": "expenses",
+      "schema": "public",
+      "columns": {
+        "amount": {
+          "name": "amount",
+          "type": "bigint",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "bigint"
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "rent",
+            "utilities",
+            "salary",
+            "transport",
+            "marketing",
+            "office_supplies",
+            "other"
+          ],
+          "mappedType": "enum"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "expense_date": {
+          "name": "expense_date",
+          "type": "date",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "date"
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": true,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 255,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "string"
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "payment_method": {
+          "name": "payment_method",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "cash",
+            "bank_transfer",
+            "card",
+            "other"
+          ],
+          "mappedType": "enum"
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [
+            "pending",
+            "approved",
+            "paid",
+            "cancelled"
+          ],
+          "mappedType": "enum"
+        },
+        "supplier_id": {
+          "name": "supplier_id",
+          "type": "uuid",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": true,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "uuid"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamptz(6)",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": 6,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "collation": null,
+          "enumItems": [],
+          "mappedType": "datetime"
+        }
+      },
+      "indexes": [
+        {
+          "columnNames": [
+            "id"
+          ],
+          "composite": false,
+          "constraint": true,
+          "keyName": "expenses_pkey",
+          "primary": true,
+          "unique": true
+        }
+      ],
+      "checks": [
+        {
+          "name": "expenses_amount_check",
+          "expression": "amount >= 0",
+          "definition": "CHECK ((amount >= 0))",
+          "columnName": "amount"
+        },
+        {
+          "name": "expenses_category_check",
+          "expression": "\"category\" in ('rent', 'utilities', 'salary', 'transport', 'marketing', 'office_supplies', 'other')",
+          "definition": "check (\"category\" in ('rent', 'utilities', 'salary', 'transport', 'marketing', 'office_supplies', 'other'))",
+          "columnName": "category"
+        },
+        {
+          "name": "expenses_payment_method_check",
+          "expression": "\"payment_method\" in ('cash', 'bank_transfer', 'card', 'other')",
+          "definition": "check (\"payment_method\" in ('cash', 'bank_transfer', 'card', 'other'))",
+          "columnName": "payment_method"
+        },
+        {
+          "name": "expenses_status_check",
+          "expression": "\"status\" in ('pending', 'approved', 'paid', 'cancelled')",
+          "definition": "check (\"status\" in ('pending', 'approved', 'paid', 'cancelled'))",
+          "columnName": "status"
+        }
+      ],
+      "triggers": [],
+      "foreignKeys": {
+        "expenses_supplier_id_foreign": {
+          "columnNames": [
+            "supplier_id"
+          ],
+          "constraintName": "expenses_supplier_id_foreign",
+          "localTableName": "public.expenses",
+          "referencedColumnNames": [
+            "id"
+          ],
+          "referencedTableName": "public.suppliers",
+          "updateRule": "cascade",
+          "deleteRule": "set null"
+        }
+      },
       "comment": null
     },
     {
@@ -2131,7 +2418,7 @@
     {
       "name": "inventories",
       "schema": "public",
-      "definition": "select\n      b.product_id,\n      sum(b.quantity)::int as total_quantity,\n      count(*)::int as batch_count,\n      min(b.expires_at) filter (where b.quantity > 0) as nearest_expiry,\n      sum(b.quantity * b.unit_cost)::bigint as stock_value,\n      max(b.updated_at) as updated_at\n    from batches b\n    group by b.product_id"
+      "definition": "SELECT product_id,\n    (sum(quantity))::integer AS total_quantity,\n    (count(*))::integer AS batch_count,\n    min(expires_at) FILTER (WHERE (quantity > 0)) AS nearest_expiry,\n    (sum((quantity * unit_cost)))::bigint AS stock_value,\n    max(updated_at) AS updated_at\n   FROM batches b\n  GROUP BY product_id"
     }
   ],
   "nativeEnums": {}
